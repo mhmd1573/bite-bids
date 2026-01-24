@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Layout Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #0a0e27 0%, #1e293b 100%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .tab-list-custom {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            width: 100% !important;
+            background: white !important;
+            padding: 0.25rem !important;
+            border-radius: 0.5rem !important;
+            margin-bottom: 1.5rem !important;
+            gap: 0.25rem !important;
+        }
+        
+        .tab-trigger-custom {
+            background: white !important;
+            color: black !important;
+            padding: 0.75rem 1rem !important;
+            border-radius: 0.375rem !important;
+            transition: all 0.2s ease !important;
+            border: 1px solid #e5e7eb !important;
+            text-align: center !important;
+            cursor: pointer !important;
+        }
+        
+        .tab-trigger-custom:hover {
+            background: #f3f4f6 !important;
+        }
+        
+        .tab-trigger-custom.active {
+            background: #dbeafe !important;
+            color: #1e40af !important;
+            border-color: #3b82f6 !important;
+        }
+        
+        .form-section {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #3b82f6; text-align: center; margin-bottom: 2rem;">
+            Tab Layout Test
+        </h1>
+        
+        <div>
+            <h2 style="color: #14b8a6; margin-bottom: 1rem;">Fixed Tab Layout</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">
+                This demonstrates the corrected tab layout with Login and Join Platform side by side:
+            </p>
+            
+            <div class="tab-list-custom" id="tabList">
+                <button class="tab-trigger-custom active" id="loginTab" onclick="switchTab('login')">
+                    Login
+                </button>
+                <button class="tab-trigger-custom" id="registerTab" onclick="switchTab('register')">
+                    Join Platform
+                </button>
+            </div>
+            
+            <div class="form-section">
+                <div id="loginForm" style="display: block;">
+                    <h3 style="color: white; margin-bottom: 1rem;">Login Form</h3>
+                    <p style="color: #94a3b8;">Login form content would appear here...</p>
+                </div>
+                
+                <div id="registerForm" style="display: none;">
+                    <h3 style="color: white; margin-bottom: 1rem;">Registration Form</h3>
+                    <p style="color: #94a3b8;">Registration form content would appear here...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 0.5rem;">
+            <h3 style="color: #22c55e; margin-top: 0;">✅ Layout Fixed</h3>
+            <ul style="color: #94a3b8; margin: 0;">
+                <li>Tabs are displayed side by side in the same row</li>
+                <li>White background behind the tab text</li>
+                <li>Black text color for good visibility</li>
+                <li>Proper hover and active states</li>
+                <li>Responsive grid layout</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // Remove active class from all tabs
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('registerTab').classList.remove('active');
+            
+            // Hide all forms
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            
+            // Activate selected tab and show corresponding form
+            if (tabName === 'login') {
+                document.getElementById('loginTab').classList.add('active');
+                document.getElementById('loginForm').style.display = 'block';
+            } else {
+                document.getElementById('registerTab').classList.add('active');
+                document.getElementById('registerForm').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

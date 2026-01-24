@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteBids Horizontal Navigation Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        /* BiteBids Navigation - HORIZONTAL LAYOUT */
+        .cosmic-glass-nav {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(20, 184, 166, 0.2);
+            padding: 1rem 0;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        /* FORCE HORIZONTAL NAVIGATION ITEMS */
+        .nav-items {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-button {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+        
+        .nav-button:hover {
+            color: white;
+            background: rgba(20, 184, 166, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .nav-button.active {
+            color: #14b8a6;
+            background: rgba(20, 184, 166, 0.2);
+            border-bottom: 2px solid #14b8a6;
+        }
+        
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        /* User Profile Section */
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .currency-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+            margin-bottom: 2px;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            color: #14b8a6;
+            text-transform: capitalize;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        .demo-title {
+            font-size: 2.5rem;
+            color: #14b8a6;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-description {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 3rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .status-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: left;
+        }
+        
+        .status-card h3 {
+            color: #14b8a6;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .status-list {
+            list-style: none;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .nav-items {
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .user-section {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .main-content {
+                padding: 2rem 1rem;
+            }
+            
+            .demo-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BiteBids Horizontal Navigation -->
+    <nav class="cosmic-glass-nav">
+        <div class="nav-container">
+            <!-- Navigation Items - HORIZONTAL ROW -->
+            <ul class="nav-items">
+                <li>
+                    <button class="nav-button active" onclick="setActive(this, 'Home')">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                        Home
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-button" onclick="setActive(this, 'Marketplace')">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path d="m7 7 4-4 4 4"/>
+                            <path d="m21 15-4-4-4 4"/>
+                            <path d="M12 6v5a2 2 0 0 1-2 2H3"/>
+                            <path d="M17 12v5a2 2 0 0 1-2 2H3"/>
+                        </svg>
+                        Marketplace
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-button" onclick="setActive(this, 'Auctions')">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path d="m18 6 2 2-8 8-4-4-8 8"/>
+                            <path d="M22 6l-4 4"/>
+                        </svg>
+                        Auctions
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-button" onclick="setActive(this, 'Dashboard')">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Dashboard
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- User Section -->
+            <div class="user-section">
+                <!-- Currency Toggle -->
+                <div class="currency-toggle">
+                    <span style="color: white;">USD</span>
+                    <button onclick="toggleCurrency()" style="background: none; border: none; color: #14b8a6; cursor: pointer; font-size: 1.2rem;">⇄</button>
+                    <span style="color: rgba(255,255,255,0.6);">EUR</span>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="user-profile">
+                    <div class="user-avatar">RS</div>
+                    <div class="user-info">
+                        <div class="user-name">Rayan Sincar</div>
+                        <div class="user-role">Investor</div>
+                    </div>
+                    <button onclick="logout()" style="background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; padding: 0.25rem; font-size: 1.1rem;" title="Logout">⏻</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="demo-title">Horizontal Navigation Fixed!</h1>
+        <p class="demo-description">Home, Marketplace, Auctions, Dashboard now displayed in a clean horizontal row</p>
+        
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>✅ Navigation Layout</h3>
+                <ul class="status-list">
+                    <li class="status-item">
+                        <span>📐</span>
+                        <span><strong>Horizontal Row:</strong> All navigation items in one clean line</span>
+                    </li>
+                    <li class="status-item">
+                        <span>🎨</span>
+                        <span><strong>Professional Design:</strong> Proper spacing and hover effects</span>
+                    </li>
+                    <li class="status-item">
+                        <span>🎯</span>
+                        <span><strong>Active States:</strong> Clear indication of current page</span>
+                    </li>
+                    <li class="status-item">
+                        <span>📱</span>
+                        <span><strong>Responsive:</strong> Adapts to mobile screens</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="status-card">
+                <h3>✅ User Profile Display</h3>
+                <ul class="status-list">
+                    <li class="status-item">
+                        <span>👤</span>
+                        <span><strong>Name Visible:</strong> "Rayan Sincar" clearly displayed</span>
+                    </li>
+                    <li class="status-item">
+                        <span>🏷️</span>
+                        <span><strong>Role Shown:</strong> "Investor" prominently visible</span>
+                    </li>
+                    <li class="status-item">
+                        <span>💱</span>
+                        <span><strong>Currency Toggle:</strong> USD/EUR switcher available</span>
+                    </li>
+                    <li class="status-item">
+                        <span>🔐</span>
+                        <span><strong>Logout Access:</strong> Easy logout functionality</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Navigation functionality
+        function setActive(button, pageName) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            console.log(`Navigated to: ${pageName}`);
+            alert(`✅ Horizontal Navigation Working!\nSwitched to: ${pageName}`);
+        }
+        
+        // Currency toggle
+        function toggleCurrency() {
+            console.log('Currency toggle clicked');
+            alert('💱 Currency toggle functionality works!');
+        }
+        
+        // Logout functionality
+        function logout() {
+            console.log('Logout clicked');
+            alert('🔐 Logout functionality works!');
+        }
+        
+        // Initialize
+        console.log('✅ BiteBids Horizontal Navigation Demo loaded');
+        console.log('✅ Navigation items displayed in clean horizontal row');
+        console.log('✅ Home | Marketplace | Auctions | Dashboard');
+    </script>
+</body>
+</html>

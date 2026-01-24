@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteBids Admin Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 15px;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+        }
+        
+        .admin-section {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(20, 184, 166, 0.2);
+        }
+        
+        .admin-section h3 {
+            color: #14b8a6;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .login-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+        
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #cbd5e1;
+        }
+        
+        input, button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.7);
+            color: white;
+            font-size: 14px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 41, 59, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #14b8a6;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #cbd5e1;
+            margin-top: 5px;
+        }
+        
+        .data-display {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(20, 184, 166, 0.1);
+        }
+        
+        .success {
+            color: #10b981;
+        }
+        
+        .error {
+            color: #ef4444;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .login-section {
+                flex-direction: column;
+            }
+            
+            .input-group {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 BiteBids Admin Dashboard</h1>
+            <p>Secure Business Owner Access Portal</p>
+        </div>
+        
+        <!-- Login Section -->
+        <div class="admin-section">
+            <h3>🔐 Admin Authentication</h3>
+            <div class="login-section">
+                <div class="input-group">
+                    <label for="email">Admin Email</label>
+                    <input type="email" id="email" value="admin@bitebids.com" placeholder="admin@bitebids.com">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" value="BiteBidsAdmin2024!" placeholder="Enter password">
+                </div>
+                <div class="input-group">
+                    <button onclick="adminLogin()" id="loginBtn">🔑 Secure Login</button>
+                </div>
+            </div>
+            <div id="loginResult" class="data-display hidden"></div>
+        </div>
+        
+        <!-- Dashboard Stats -->
+        <div class="admin-section hidden" id="dashboardSection">
+            <h3>📊 Dashboard Overview</h3>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated here -->
+            </div>
+            <button onclick="loadDashboard()">🔄 Refresh Dashboard</button>
+            <div id="dashboardResult" class="data-display hidden"></div>
+        </div>
+        
+        <!-- User Management -->
+        <div class="admin-section hidden" id="userSection">
+            <h3>👥 User Management</h3>
+            <button onclick="loadUsers()">📋 View All Users</button>
+            <div id="userResult" class="data-display hidden"></div>
+        </div>
+        
+        <!-- Transactions -->
+        <div class="admin-section hidden" id="transactionSection">
+            <h3>💳 Transaction Monitoring</h3>
+            <button onclick="loadTransactions()">💰 View Transactions</button>
+            <div id="transactionResult" class="data-display hidden"></div>
+        </div>
+        
+        <!-- Analytics -->
+        <div class="admin-section hidden" id="analyticsSection">
+            <h3>📈 Business Analytics</h3>
+            <button onclick="loadAnalytics()">📊 View Analytics</button>
+            <div id="analyticsResult" class="data-display hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        let adminToken = null;
+        const API_BASE = 'https://bitebids-touch.preview.emergentagent.com/api';
+        
+        async function adminLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginResult = document.getElementById('loginResult');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = '🔄 Authenticating...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    adminToken = data.token;
+                    loginResult.className = 'data-display success';
+                    loginResult.innerHTML = `✅ <strong>Login Successful!</strong><br>Welcome, ${data.admin.email}<br>Role: ${data.admin.role}`;
+                    loginResult.classList.remove('hidden');
+                    
+                    // Show admin sections
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                    document.getElementById('userSection').classList.remove('hidden');
+                    document.getElementById('transactionSection').classList.remove('hidden');
+                    document.getElementById('analyticsSection').classList.remove('hidden');
+                    
+                    // Auto-load dashboard
+                    setTimeout(loadDashboard, 1000);
+                } else {
+                    throw new Error(data.detail || 'Login failed');
+                }
+            } catch (error) {
+                loginResult.className = 'data-display error';
+                loginResult.innerHTML = `❌ <strong>Login Failed:</strong><br>${error.message}`;
+                loginResult.classList.remove('hidden');
+            }
+            
+            loginBtn.disabled = false;
+            loginBtn.textContent = '🔑 Secure Login';
+        }
+        
+        async function loadDashboard() {
+            if (!adminToken) return alert('Please login first');
+            
+            const statsGrid = document.getElementById('statsGrid');
+            const dashboardResult = document.getElementById('dashboardResult');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update stats grid
+                    statsGrid.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-number">${data.stats.users.total}</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">$${data.stats.payments.total_revenue.toLocaleString()}</div>
+                            <div class="stat-label">Revenue</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.stats.projects.active}</div>
+                            <div class="stat-label">Active Projects</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.stats.payments.completed_transactions}</div>
+                            <div class="stat-label">Transactions</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.stats.users.developers}</div>
+                            <div class="stat-label">Developers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.stats.users.investors}</div>
+                            <div class="stat-label">Investors</div>
+                        </div>
+                    `;
+                    
+                    dashboardResult.className = 'data-display success';
+                    dashboardResult.innerHTML = `<strong>✅ Dashboard Loaded Successfully</strong><br>Recent Users: ${data.recent_activity.users.length}<br>Recent Projects: ${data.recent_activity.projects.length}`;
+                    dashboardResult.classList.remove('hidden');
+                } else {
+                    throw new Error(data.detail || 'Failed to load dashboard');
+                }
+            } catch (error) {
+                dashboardResult.className = 'data-display error';
+                dashboardResult.innerHTML = `❌ <strong>Error:</strong> ${error.message}`;
+                dashboardResult.classList.remove('hidden');
+            }
+        }
+        
+        async function loadUsers() {
+            if (!adminToken) return alert('Please login first');
+            
+            const userResult = document.getElementById('userResult');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/users?limit=10`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let userList = data.users.map((user, index) => 
+                        `${index + 1}. <strong>${user.name}</strong> (${user.email})<br>   Role: ${user.role} | Company: ${user.company || 'N/A'}`
+                    ).join('<br><br>');
+                    
+                    userResult.className = 'data-display success';
+                    userResult.innerHTML = `<strong>👥 Users (${data.total} total, showing ${data.users.length}):</strong><br><br>${userList}`;
+                    userResult.classList.remove('hidden');
+                } else {
+                    throw new Error(data.detail || 'Failed to load users');
+                }
+            } catch (error) {
+                userResult.className = 'data-display error';
+                userResult.innerHTML = `❌ <strong>Error:</strong> ${error.message}`;
+                userResult.classList.remove('hidden');
+            }
+        }
+        
+        async function loadTransactions() {
+            if (!adminToken) return alert('Please login first');
+            
+            const transactionResult = document.getElementById('transactionResult');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/transactions?limit=10`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let transactionList = data.transactions.map((tx, index) => 
+                        `${index + 1}. <strong>${tx.order_reference}</strong><br>   Amount: $${tx.payment_request?.amount || 'N/A'} | Status: ${tx.status}<br>   Customer: ${tx.payment_request?.customer_name || 'N/A'}`
+                    ).join('<br><br>');
+                    
+                    transactionResult.className = 'data-display success';
+                    transactionResult.innerHTML = `<strong>💳 Transactions (${data.total} total, showing ${data.transactions.length}):</strong><br><br>${transactionList || 'No transactions yet'}`;
+                    transactionResult.classList.remove('hidden');
+                } else {
+                    throw new Error(data.detail || 'Failed to load transactions');
+                }
+            } catch (error) {
+                transactionResult.className = 'data-display error';
+                transactionResult.innerHTML = `❌ <strong>Error:</strong> ${error.message}`;
+                transactionResult.classList.remove('hidden');
+            }
+        }
+        
+        async function loadAnalytics() {
+            if (!adminToken) return alert('Please login first');
+            
+            const analyticsResult = document.getElementById('analyticsResult');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/analytics`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let monthlyRevenue = data.revenue.monthly_revenue.map(month => 
+                        `${month.month}: $${month.revenue}`
+                    ).join(' | ');
+                    
+                    let categories = data.popular_categories.map(cat => 
+                        `${cat.category}: ${cat.count} projects`
+                    ).join('<br>   ');
+                    
+                    analyticsResult.className = 'data-display success';
+                    analyticsResult.innerHTML = `
+                        <strong>📈 Business Analytics:</strong><br><br>
+                        <strong>💰 Revenue Trend:</strong><br>   ${monthlyRevenue}<br><br>
+                        <strong>🎯 Popular Categories:</strong><br>   ${categories}<br><br>
+                        <strong>📊 Total Revenue:</strong> $${data.revenue.total_revenue.toLocaleString()}<br>
+                        <strong>💼 Platform Fees:</strong> $${data.revenue.platform_fees.toLocaleString()}
+                    `;
+                    analyticsResult.classList.remove('hidden');
+                } else {
+                    throw new Error(data.detail || 'Failed to load analytics');
+                }
+            } catch (error) {
+                analyticsResult.className = 'data-display error';
+                analyticsResult.innerHTML = `❌ <strong>Error:</strong> ${error.message}`;
+                analyticsResult.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

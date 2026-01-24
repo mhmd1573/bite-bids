@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Scroll Login Demo - BiteBids</title>
+    <style>
+        /* Remove all scrolling */
+        html, body {
+            overflow: hidden !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1e293b 100%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .login-container-clean {
+            height: 100vh !important;
+            max-height: 100vh !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 1rem !important;
+        }
+        
+        .login-card {
+            width: 100%;
+            max-width: 28rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .card-header {
+            text-align: center;
+            padding-bottom: 1rem;
+        }
+        
+        .logo {
+            height: 2.5rem;
+            width: auto;
+            max-width: 120px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .tab-list-custom {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            width: 100% !important;
+            background: white !important;
+            padding: 0.5rem !important;
+            border-radius: 0.75rem !important;
+            margin-bottom: 1rem !important;
+            gap: 0.5rem !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .tab-trigger-custom {
+            background: white !important;
+            color: black !important;
+            padding: 1rem 1.5rem !important;
+            border-radius: 0.5rem !important;
+            transition: all 0.2s ease !important;
+            border: 2px solid #e5e7eb !important;
+            text-align: center !important;
+            cursor: pointer !important;
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+        }
+        
+        .tab-trigger-custom:hover {
+            background: #f8fafc !important;
+            border-color: #3b82f6 !important;
+            transform: translateY(-1px) !important;
+        }
+        
+        .tab-trigger-custom.active {
+            background: #3b82f6 !important;
+            color: white !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+        }
+        
+        .form-area {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .form-field {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: black;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1f2937;
+            font-size: 1rem;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #14b8a6 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        
+        .success-indicator {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container-clean">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="card-header">
+                <img src="/bitebids-logo.jpg" alt="BiteBids Logo" class="logo" style="display: block; margin: 0 auto;">
+                <h1 style="color: black; font-size: 1.25rem; font-weight: bold; margin: 0.75rem 0 0.5rem 0;">BiteBids</h1>
+                <p style="color: black; font-size: 0.875rem; margin: 0;">AI-Powered Developer Marketplace</p>
+            </div>
+            
+            <!-- Tabs - Immediately Visible -->
+            <div class="tab-list-custom">
+                <button class="tab-trigger-custom active" id="loginTab" onclick="switchTab('login')">
+                    Login
+                </button>
+                <button class="tab-trigger-custom" id="registerTab" onclick="switchTab('register')">
+                    Join Platform
+                </button>
+            </div>
+            
+            <!-- Form Area -->
+            <div class="form-area">
+                <!-- Login Form -->
+                <div id="loginForm" style="display: block;">
+                    <div class="form-field">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <button class="login-button">
+                        Enter the Cosmos
+                    </button>
+                </div>
+                
+                <!-- Registration Form -->
+                <div id="registerForm" style="display: none;">
+                    <div class="form-field">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your name" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" placeholder="Create a password" required>
+                    </div>
+                    
+                    <button class="login-button">
+                        Join the Galaxy
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Success Indicator -->
+            <div class="success-indicator">
+                <h3 style="color: #22c55e; margin: 0 0 0.5rem 0;">✅ Clean No-Scroll Layout</h3>
+                <ul style="color: #94a3b8; margin: 0; padding-left: 1rem; text-align: left; font-size: 0.875rem;">
+                    <li>No scroll bars anywhere on the page</li>
+                    <li>Login/Join Platform tabs immediately visible</li>
+                    <li>Fits entirely within viewport (100vh)</li>
+                    <li>Clean, compact design</li>
+                    <li>Professional appearance</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // Remove active class from all tabs
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('registerTab').classList.remove('active');
+            
+            // Hide all forms
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            
+            // Activate selected tab and show corresponding form
+            if (tabName === 'login') {
+                document.getElementById('loginTab').classList.add('active');
+                document.getElementById('loginForm').style.display = 'block';
+            } else {
+                document.getElementById('registerTab').classList.add('active');
+                document.getElementById('registerForm').style.display = 'block';
+            }
+        }
+        
+        // Ensure no scrolling
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            console.log('✅ No-scroll layout initialized - tabs are immediately visible!');
+        });
+        
+        // Prevent any scroll attempts
+        window.addEventListener('scroll', function(e) {
+            e.preventDefault();
+            window.scrollTo(0, 0);
+            return false;
+        });
+    </script>
+</body>
+</html>
