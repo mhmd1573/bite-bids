@@ -702,7 +702,8 @@
   /* Make modal body scrollable instead */
   max-height: calc(90vh - 140px);
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
+  padding-bottom: 300px; /* Extra padding to allow dropdown space */
 }
 
 .form-grid-2 {
@@ -1518,11 +1519,17 @@
   }
 
   .post-project-modal-wide .modal-body {
-    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: visible !important;
+    padding-bottom: 350px;
   }
 
   .post-project-modal-wide .form-grid {
     overflow: visible;
+  }
+
+  .multi-select-dropdown {
+    max-height: 200px;
   }
 
   .project-details-stats {
