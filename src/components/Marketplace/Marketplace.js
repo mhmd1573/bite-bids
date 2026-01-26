@@ -1009,12 +1009,6 @@ useEffect(() => {
                           <span>{project.bids_count} bids</span>
                         </div>
 
-                        <div className="project-meta-item">
-                          <Star className="w-4 h-4 fill-warning-400 text-warning-400" />
-                          <span className="rating-value">{project.rating}</span>
-                          <span className="rating-count">({project.reviews_count})</span>
-                        </div>
-
                       </div>
 
                       <button 
@@ -1580,9 +1574,6 @@ useEffect(() => {
                     <div className="client-meta">
                       <MapPin className="w-4 h-4" />
                       <span>{selectedProjectDetails.location}</span>
-                      <span className="separator">•</span>
-                      <Star className="w-4 h-4 fill-warning-400 text-warning-400" />
-                      <span>{selectedProjectDetails.rating} ({selectedProjectDetails.reviews_count} reviews)</span>
                     </div>
 
                     {selectedProjectDetails.category && (

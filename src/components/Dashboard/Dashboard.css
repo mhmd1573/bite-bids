@@ -790,6 +790,17 @@
   .dashboard-header-actions .btn {
     flex: 1;
   }
+
+  /* Make project card buttons smaller on mobile */
+  .project-card-actions .btn {
+    font-size: 0.8125rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .project-card-actions .btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
 }
 
 

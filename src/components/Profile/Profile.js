@@ -95,9 +95,12 @@ const Profile = ({ user }) => {
       });
 
       // Check if there's a pending email change
+      // Only show the verification message if we haven't shown it in this session
       if (response.data.pending_email) {
-        setEmailVerificationPending(true);
         setPendingEmail(response.data.pending_email);
+
+        // Don't automatically show the banner on page load
+        // It will only be shown after the user saves their profile (see handleSaveProfile)
       }
     } catch (error) {
       console.error('Failed to fetch profile:', error);

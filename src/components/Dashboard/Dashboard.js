@@ -1030,8 +1030,31 @@ const handleInitiatePostProject = async () => {
               
                 </div>
 
+                {/* Info Note about Chat Rooms */}
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                  borderLeft: '4px solid #3b82f6',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  gap: '0.75rem',
+                  alignItems: 'flex-start'
+                }}>
+                  <AlertCircle style={{
+                    flexShrink: 0,
+                    color: '#3b82f6',
+                    marginTop: '2px',
+                    width: '20px',
+                    height: '20px'
+                  }} />
+                  <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5, color: '#1e40af' }}>
+                    <strong style={{ fontWeight: 600 }}>Note:</strong> Projects with active chat rooms cannot be edited or deleted to maintain conversation history and project integrity.
+                  </p>
+                </div>
+
                 <div className="projects-list-dashboard">
-                  
+
                   {/* Loading State */}
                   {loading && (
                     <div className="empty-state">
