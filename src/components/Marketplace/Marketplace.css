@@ -596,6 +596,9 @@
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: var(--spacing-4);
+  /* Allow dropdowns to overflow */
+  overflow: visible;
+  position: relative;
 }
 
 .form-label {
@@ -691,7 +694,15 @@
   max-width: 900px !important;
   width: 90% !important;
   max-height: 90vh;
+  /* Changed to allow dropdown to overflow */
+  overflow: visible !important;
+}
+
+.post-project-modal-wide .modal-body {
+  /* Make modal body scrollable instead */
+  max-height: calc(90vh - 140px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .form-grid-2 {
@@ -734,6 +745,9 @@
 .multi-select-container {
   position: relative;
   width: 100%;
+  /* Ensure dropdown is not clipped */
+  overflow: visible;
+  z-index: 100;
 }
 
 .multi-select-input {
@@ -806,6 +820,8 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   z-index: 10000;
   animation: dropdownSlideDown 0.2s ease;
+  /* Ensure it appears above everything */
+  will-change: transform;
 }
 
 @keyframes dropdownSlideDown {
@@ -1497,8 +1513,17 @@
   .post-project-modal-wide {
     max-width: 95% !important;
     width: 95% !important;
+    /* Allow dropdown overflow */
+    overflow: visible !important;
   }
 
+  .post-project-modal-wide .modal-body {
+    overflow: visible !important;
+  }
+
+  .post-project-modal-wide .form-grid {
+    overflow: visible;
+  }
 
   .project-details-stats {
     grid-template-columns: 1fr;
