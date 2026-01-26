@@ -330,7 +330,7 @@ const AdminPayouts = () => {
 
       {/* Filter Bar */}
       <div className="filter-bar">
-        <div className="filter-group">
+        <div className="admin-payouts-filter-group">
           <Filter size={18} />
           <select
             value={statusFilter}

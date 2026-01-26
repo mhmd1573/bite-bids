@@ -127,7 +127,7 @@
   margin-bottom: 1.5rem;
 }
 
-.filter-group {
+.admin-payouts-filter-group {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -137,7 +137,7 @@
   border-radius: 8px;
 }
 
-.filter-group select {
+.admin-payouts-filter-group select {
   border: none;
   background: transparent;
   font-size: 0.9375rem;

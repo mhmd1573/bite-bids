@@ -704,8 +704,8 @@ useEffect(() => {
                 </div>
 
                 {/* Categories */}
-                <div className="filter-group">
-                  <h4 className="filter-group-title">Categories</h4>
+                <div className="marketplace-filter-group">
+                  <h4 className="marketplace-filter-group-title">Categories</h4>
                   <div className="filter-options">
                     {categories.map((category) => {
                       const Icon = category.icon;
@@ -724,8 +724,8 @@ useEffect(() => {
                 </div>
 
                 {/* Budget Range */}
-                <div className="filter-group">
-                  <h4 className="filter-group-title">Budget Range</h4>
+                <div className="marketplace-filter-group">
+                  <h4 className="marketplace-filter-group-title">Budget Range</h4>
                   <div className="filter-options">
                     <button
                       onClick={() => setSelectedBudget('all')}

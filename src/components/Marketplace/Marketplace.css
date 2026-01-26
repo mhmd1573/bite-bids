@@ -161,15 +161,15 @@
   margin-bottom: var(--spacing-4);
 }
 
-.filter-group {
+.marketplace-filter-group {
   margin-bottom: var(--spacing-6);
 }
 
-.filter-group:last-child {
+.marketplace-filter-group:last-child {
   margin-bottom: 0;
 }
 
-.filter-group-title {
+.marketplace-filter-group-title {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--text-primary);
