@@ -837,8 +837,7 @@
 }
 
 .multi-select-option {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
   gap: var(--spacing-3);
   padding: var(--spacing-3) var(--spacing-4);
@@ -847,24 +846,26 @@
   border-bottom: 1px solid var(--border);
 }
 
+.multi-select-option .multi-select-checkbox {
+  flex-shrink: 0;
+  order: 1;
+}
+
 .multi-select-option span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  flex: 1;
+  order: 2;
 }
 
 .multi-select-option svg {
   width: 16px;
   height: 16px;
-}
-
-.multi-select-option .multi-select-checkbox {
-  justify-self: start;
-}
-
-.multi-select-option svg:last-child {
-  justify-self: end;
+  flex-shrink: 0;
+  order: 3;
+  margin-left: auto;
 }
 
 .multi-select-option:last-child {
