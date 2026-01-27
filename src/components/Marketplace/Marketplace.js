@@ -1700,77 +1700,24 @@ useEffect(() => {
 
              {/* ✅ NEW: Project Images Gallery */}
               {selectedProjectDetails.images && selectedProjectDetails.images.length > 0 && (
-                <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.5rem',
-                    fontSize: '1.125rem',
-                    fontWeight: 600,
-                    marginBottom: '1rem'
-                  }}>
-                    <ImageIcon style={{ width: '20px', height: '20px', color: '#6366f1' }} />
+                <div className="project-images-section">
+                  <h3>
+                    <ImageIcon />
                     Project Images
                   </h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: '1rem'
-                  }}>
+                  <div className="project-images-gallery">
                     {selectedProjectDetails.images.map((img, idx) => (
-                      <div key={idx} style={{
-                        aspectRatio: '1',
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        border: '2px solid #e2e8f0',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        position: 'relative'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = '#6366f1';
-                        e.currentTarget.style.transform = 'translateY(-4px)';
-                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = '#e2e8f0';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                      onClick={(e) => {
-                        // Toggle fullscreen
-                        if (e.currentTarget.classList.contains('fullscreen')) {
-                          e.currentTarget.classList.remove('fullscreen');
-                          e.currentTarget.style.position = 'relative';
-                          e.currentTarget.style.width = 'auto';
-                          e.currentTarget.style.height = 'auto';
-                          e.currentTarget.style.zIndex = 'auto';
-                          e.currentTarget.style.background = 'transparent';
-                          e.currentTarget.style.padding = '0';
-                          e.currentTarget.querySelector('img').style.objectFit = 'cover';
-                        } else {
-                          e.currentTarget.classList.add('fullscreen');
-                          e.currentTarget.style.position = 'fixed';
-                          e.currentTarget.style.top = '0';
-                          e.currentTarget.style.left = '0';
-                          e.currentTarget.style.width = '100vw';
-                          e.currentTarget.style.height = '100vh';
-                          e.currentTarget.style.zIndex = '10000';
-                          e.currentTarget.style.background = 'rgba(0, 0, 0, 0.95)';
-                          e.currentTarget.style.padding = '2rem';
-                          e.currentTarget.querySelector('img').style.objectFit = 'contain';
-                        }
-                      }}
+                      <div
+                        key={idx}
+                        className="gallery-image-wrapper"
+                        onClick={(e) => {
+                          e.currentTarget.classList.toggle('fullscreen');
+                        }}
                       >
                         <img
                           src={getImageUrl(img)}
                           alt={`Project image ${idx + 1}`}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            transition: 'transform 0.2s'
-                          }}
+                          className="gallery-image"
                         />
                       </div>
                     ))}
