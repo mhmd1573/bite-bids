@@ -75,6 +75,10 @@ const [pendingPayout, setPendingPayout] = useState(null);
 const [showPayoutModal, setShowPayoutModal] = useState(false);
 const [savingPayout, setSavingPayout] = useState(false);
 
+// ✅ Project Download State (for investor after confirmation)
+const [downloadingProject, setDownloadingProject] = useState(false);
+const [hasConfirmedProject, setHasConfirmedProject] = useState(false);
+
 
 // Add this function to toggle sidebar:
 const toggleSidebar = () => {
@@ -643,6 +647,11 @@ useEffect(() => {
       if (response.ok) {
         const data = await response.json();
         setPendingPayout(data);
+
+        // ✅ If payout exists, it means investor has confirmed
+        if (data?.has_pending_payout) {
+          setHasConfirmedProject(true);
+        }
       }
     } catch (error) {
       console.error('Error fetching pending payout:', error);
@@ -1193,6 +1202,53 @@ const renderFileTree = (items, parentPath = '') => {
     }
   };
 
+  // ✅ NEW: Download Project as ZIP (for investor after confirmation)
+  const handleDownloadProject = async () => {
+    if (!roomId) return;
+
+    setDownloadingProject(true);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/github/download-repo/${roomId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        // Get filename from Content-Disposition header or use default
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'project.zip';
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showNotification('success', 'Download Complete', 'Project has been downloaded successfully.');
+      } else {
+        const error = await response.json();
+        showNotification('error', 'Download Failed', error.detail || 'Failed to download project. Please confirm the project first.');
+      }
+    } catch (error) {
+      console.error('Error downloading project:', error);
+      showNotification('error', 'Download Failed', 'Failed to download project.');
+    } finally {
+      setDownloadingProject(false);
+    }
+  };
+
   const handleConfirmProject = async () => {
     if (!projectData) return;
 
@@ -1211,9 +1267,10 @@ const renderFileTree = (items, parentPath = '') => {
         showNotification(
           'success',
           'Project Confirmed',
-          'Payment has been released to the developer.'
+          'Payment has been released to the developer. You can now download the project.'
         );
         setShowConfirmModal(false);
+        setHasConfirmedProject(true); // ✅ Enable download button
         fetchProjectDetails();
       } else {
         const error = await response.json();
@@ -1407,6 +1464,28 @@ const renderFileTree = (items, parentPath = '') => {
             >
               <FolderTree size={18} />
               <span>Review Project</span>
+            </button>
+          )}
+
+          {/* ✅ NEW: Download Project Button (after confirmation for investors, always for developers) */}
+          {canReviewProject && (isDeveloper || hasConfirmedProject) && (
+            <button
+              className="chat-action-btn download-project-btn"
+              onClick={handleDownloadProject}
+              disabled={downloadingProject}
+              title="Download project as ZIP"
+            >
+              {downloadingProject ? (
+                <>
+                  <Loader size={18} className="spinning" />
+                  <span>Downloading...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>Download Project</span>
+                </>
+              )}
             </button>
           )}
 
