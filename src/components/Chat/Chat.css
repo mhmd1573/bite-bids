@@ -3,19 +3,32 @@
    ============================================ */
 
 /* ============================================
-   CHAT PAGE WRAPPER - Full viewport, no scroll
+   CHAT PAGE WRAPPER - Below navbar, fills remaining height
    ============================================ */
+
+/* Remove padding from parent when chat is displayed */
+.page-content:has(.chat-page) {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Also handle the main container padding */
+main:has(.chat-page) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
 .chat-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
+  height: calc(100vh - 90px); /* Account for navbar height + some margin */
+  height: calc(100dvh - 90px); /* Dynamic viewport height for mobile */
+  max-width: 100%;
+  margin: 0;
   overflow: hidden;
-  z-index: 100;
+  background: white;
+  border-top: 1px solid #e5e7eb;
 }
 
 .chat-container {
@@ -1041,15 +1054,10 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  /* Page wrapper - full screen on mobile */
+  /* Page wrapper - full height below navbar on mobile */
   .chat-page {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    height: calc(100vh - 70px); /* Slightly smaller navbar on mobile */
+    height: calc(100dvh - 70px);
   }
 
   /* Container adjustments */
@@ -1058,12 +1066,10 @@
     max-height: 100%;
   }
 
-  /* Header - more compact but still fixed */
+  /* Header - more compact */
   .chat-header {
     padding: 0.75rem 1rem;
     flex-wrap: wrap;
-    position: sticky;
-    top: 0;
   }
 
   .chat-avatar {
