@@ -77,6 +77,7 @@ const [savingPayout, setSavingPayout] = useState(false);
 
 // ✅ Project Download State (for investor after confirmation)
 const [downloadingProject, setDownloadingProject] = useState(false);
+const [downloadProgress, setDownloadProgress] = useState(0);
 const [hasConfirmedProject, setHasConfirmedProject] = useState(false);
 
 
@@ -1202,22 +1203,33 @@ const renderFileTree = (items, parentPath = '') => {
     }
   };
 
-  // ✅ NEW: Download Project as ZIP (for investor after confirmation)
-  const handleDownloadProject = async () => {
+  // ✅ NEW: Download Project as ZIP (for investor after confirmation) with progress tracking
+  const handleDownloadProject = () => {
     if (!roomId) return;
 
     setDownloadingProject(true);
+    setDownloadProgress(0);
 
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/github/download-repo/${roomId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `${BACKEND_URL}/api/github/download-repo/${roomId}`, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
+    xhr.responseType = 'blob';
 
-      if (response.ok) {
+    // Track download progress
+    xhr.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = Math.round((event.loaded / event.total) * 100);
+        setDownloadProgress(percentComplete);
+      } else {
+        // If total size is unknown, show indeterminate progress
+        setDownloadProgress(-1);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
         // Get filename from Content-Disposition header or use default
-        const contentDisposition = response.headers.get('Content-Disposition');
+        const contentDisposition = xhr.getResponseHeader('Content-Disposition');
         let filename = 'project.zip';
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
@@ -1226,7 +1238,7 @@ const renderFileTree = (items, parentPath = '') => {
           }
         }
 
-        const blob = await response.blob();
+        const blob = xhr.response;
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1238,15 +1250,20 @@ const renderFileTree = (items, parentPath = '') => {
 
         showNotification('success', 'Download Complete', 'Project has been downloaded successfully.');
       } else {
-        const error = await response.json();
-        showNotification('error', 'Download Failed', error.detail || 'Failed to download project. Please confirm the project first.');
+        showNotification('error', 'Download Failed', 'Failed to download project. Please confirm the project first.');
       }
-    } catch (error) {
-      console.error('Error downloading project:', error);
-      showNotification('error', 'Download Failed', 'Failed to download project.');
-    } finally {
       setDownloadingProject(false);
-    }
+      setDownloadProgress(0);
+    };
+
+    xhr.onerror = () => {
+      console.error('Error downloading project');
+      showNotification('error', 'Download Failed', 'Failed to download project.');
+      setDownloadingProject(false);
+      setDownloadProgress(0);
+    };
+
+    xhr.send();
   };
 
   const handleConfirmProject = async () => {
@@ -1469,24 +1486,40 @@ const renderFileTree = (items, parentPath = '') => {
 
           {/* ✅ NEW: Download Project Button (after confirmation for investors, always for developers) */}
           {canReviewProject && (isDeveloper || hasConfirmedProject) && (
-            <button
-              className="chat-action-btn download-project-btn"
-              onClick={handleDownloadProject}
-              disabled={downloadingProject}
-              title="Download project as ZIP"
-            >
-              {downloadingProject ? (
-                <>
-                  <Loader size={18} className="spinning" />
-                  <span>Downloading...</span>
-                </>
-              ) : (
-                <>
-                  <Download size={18} />
-                  <span>Download Project</span>
-                </>
+            <div style={{ position: 'relative' }}>
+              <button
+                className="chat-action-btn download-project-btn"
+                onClick={handleDownloadProject}
+                disabled={downloadingProject}
+                title="Download project as ZIP"
+                style={{ minWidth: '160px' }}
+              >
+                {downloadingProject ? (
+                  <>
+                    <Loader size={18} className="spinning" />
+                    <span>{downloadProgress > 0 ? `${downloadProgress}%` : 'Preparing...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Download size={18} />
+                    <span>Download Project</span>
+                  </>
+                )}
+              </button>
+              {/* Progress Bar Overlay */}
+              {downloadingProject && downloadProgress > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  height: '4px',
+                  width: `${downloadProgress}%`,
+                  background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '0 0 4px 4px',
+                  transition: 'width 0.3s ease'
+                }} />
               )}
-            </button>
+            </div>
           )}
 
           {/* Investor Action Buttons */}
