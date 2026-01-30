@@ -6,7 +6,7 @@ import {
   AlertCircle, ArrowRight, Calendar,
   Target, Zap, MessageSquare, FileText,
   Settings, Bell, Download, Plus, Code, X, MapPin, Filter, Check, Lock, Trash2, Edit, Save,
-  Upload, Image as ImageIcon, Wallet, Shield, AlertTriangle
+  Upload, Image as ImageIcon, Wallet, Shield, AlertTriangle, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 
@@ -30,7 +30,10 @@ const getImageUrl = (imageUrl) => {
 
 const Dashboard = ({ user, navigateToPage }) => {
       const { showNotification } = useNotification();
-    
+
+      // Collapsible guide state
+      const [showProcessGuide, setShowProcessGuide] = useState(false);
+
       const [activeTab, setActiveTab] = useState('overview');
       const [selectedCategory, setSelectedCategory] = useState('all');
       const [projectStatusTab, setProjectStatusTab] = useState('active'); // New: Tab for Active/Closed projects
@@ -1719,36 +1722,49 @@ const handleInitiatePostProject = async () => {
             {/* Right Sidebar */}
             <aside className="dashboard-sidebar">
 
-              {/* Project Process Guide */}
+              {/* Project Process Guide - Collapsible */}
               <div className="sidebar-card" style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1px solid #0ea5e9' }}>
-                <div className="sidebar-card-header">
-                  <Shield className="w-5 h-5 text-primary" />
-                  <h3 style={{ color: '#0369a1' }}>How Project Delivery Works</h3>
+                <div
+                  className="sidebar-card-header"
+                  onClick={() => setShowProcessGuide(!showProcessGuide)}
+                  style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Shield className="w-5 h-5" style={{ color: '#0369a1' }} />
+                    <h3 style={{ color: '#0369a1', margin: 0 }}>How Project Delivery Works</h3>
+                  </div>
+                  {showProcessGuide ? (
+                    <ChevronUp className="w-5 h-5" style={{ color: '#0369a1' }} />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" style={{ color: '#0369a1' }} />
+                  )}
                 </div>
-                <div className="sidebar-card-body" style={{ fontSize: '0.85rem', lineHeight: '1.6' }}>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                      <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0 }}>1</span>
-                      <div>
-                        <strong style={{ color: '#0369a1' }}>Submit Your Repository</strong>
-                        <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Share your private repository link and access token. BiteBids displays your code in a secure tree view — investors can review but cannot copy, download, or steal your work.</p>
+                {showProcessGuide && (
+                  <div className="sidebar-card-body" style={{ fontSize: '0.85rem', lineHeight: '1.6', paddingTop: '0.75rem' }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                        <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0 }}>1</span>
+                        <div>
+                          <strong style={{ color: '#0369a1' }}>Submit Your Repository</strong>
+                          <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Share your private repository link and access token. BiteBids displays your code in a secure tree view — investors can review but cannot copy, download, or steal your work.</p>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0 }}>2</span>
+                        <div>
+                          <strong style={{ color: '#0369a1' }}>Get Paid Securely</strong>
+                          <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Once the investor confirms the project is complete, payment is released to you automatically. Only then can they download the final project files.</p>
+                        </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0 }}>2</span>
-                      <div>
-                        <strong style={{ color: '#0369a1' }}>Get Paid Securely</strong>
-                        <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Once the investor confirms the project is complete, payment is released to you automatically. Only then can they download the final project files.</p>
-                      </div>
+                    <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '0.5rem', padding: '0.75rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <AlertTriangle className="w-4 h-4" style={{ color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
+                      <p style={{ margin: 0, color: '#92400e', fontSize: '0.8rem' }}>
+                        <strong>Warning:</strong> All chats are monitored in real-time. Any attempt to share contact info or conduct transactions outside BiteBids may result in account suspension and legal action.
+                      </p>
                     </div>
                   </div>
-                  <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '0.5rem', padding: '0.75rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <AlertTriangle className="w-4 h-4 text-warning" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <p style={{ margin: 0, color: '#92400e', fontSize: '0.8rem' }}>
-                      <strong>Warning:</strong> All chats are monitored in real-time. Any attempt to share contact info or conduct transactions outside BiteBids may result in account suspension and legal action.
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Payout Settings Card */}

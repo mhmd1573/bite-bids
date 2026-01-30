@@ -1486,18 +1486,20 @@ const renderFileTree = (items, parentPath = '') => {
 
           {/* ✅ NEW: Download Project Button (after confirmation for investors, always for developers) */}
           {canReviewProject && (isDeveloper || hasConfirmedProject) && (
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <button
                 className="chat-action-btn download-project-btn"
                 onClick={handleDownloadProject}
                 disabled={downloadingProject}
                 title="Download project as ZIP"
-                style={{ minWidth: '160px' }}
+                style={{ minWidth: '180px', position: 'relative', overflow: 'hidden' }}
               >
                 {downloadingProject ? (
                   <>
                     <Loader size={18} className="spinning" />
-                    <span>{downloadProgress > 0 ? `${downloadProgress}%` : 'Preparing...'}</span>
+                    <span style={{ fontWeight: 600 }}>
+                      {downloadProgress > 0 ? `Downloading ${downloadProgress}%` : 'Preparing...'}
+                    </span>
                   </>
                 ) : (
                   <>
@@ -1505,19 +1507,44 @@ const renderFileTree = (items, parentPath = '') => {
                     <span>Download Project</span>
                   </>
                 )}
+                {/* Progress Bar inside button */}
+                {downloadingProject && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    height: '5px',
+                    width: downloadProgress > 0 ? `${downloadProgress}%` : '100%',
+                    background: downloadProgress > 0
+                      ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)'
+                      : 'linear-gradient(90deg, #6366f1, #8b5cf6, #6366f1)',
+                    backgroundSize: downloadProgress > 0 ? '100% 100%' : '200% 100%',
+                    animation: downloadProgress > 0 ? 'none' : 'shimmer 1.5s infinite',
+                    transition: 'width 0.3s ease'
+                  }} />
+                )}
               </button>
-              {/* Progress Bar Overlay */}
-              {downloadingProject && downloadProgress > 0 && (
+              {/* External Progress Bar for better visibility */}
+              {downloadingProject && (
                 <div style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  height: '4px',
-                  width: `${downloadProgress}%`,
-                  background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
-                  borderRadius: '0 0 4px 4px',
-                  transition: 'width 0.3s ease'
-                }} />
+                  width: '100%',
+                  height: '8px',
+                  background: '#e5e7eb',
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: downloadProgress > 0 ? `${downloadProgress}%` : '30%',
+                    background: downloadProgress > 0
+                      ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)'
+                      : 'linear-gradient(90deg, #6366f1, #8b5cf6, #6366f1)',
+                    backgroundSize: downloadProgress > 0 ? '100% 100%' : '200% 100%',
+                    animation: downloadProgress > 0 ? 'none' : 'shimmer 1.5s infinite',
+                    borderRadius: '4px',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
               )}
             </div>
           )}

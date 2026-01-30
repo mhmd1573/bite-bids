@@ -2504,6 +2504,15 @@ input[type="password"].form-select::placeholder {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* Payout Modal */
 .payout-modal {
   max-width: 600px;
