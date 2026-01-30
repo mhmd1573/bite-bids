@@ -240,8 +240,8 @@ const locationOptions = [
         investors: apiStats.users?.investors || 0,
         totalProjects: apiStats.projects?.total || 0,
         activeProjects: apiStats.projects?.active || 0,
-        totalAuctions: apiStats.auctions?.total || 0,
-        activeAuctions: apiStats.auctions?.active || 0,
+        totalDisputes: apiStats.disputes?.total || 0,
+        activeDisputes: apiStats.disputes?.active || 0,
         totalRevenue: apiStats.payments?.total_revenue || 0,
         pendingPayments: apiStats.payments?.pending_payments || 0,
         completedTransactions: apiStats.payments?.completed_transactions || 0,
@@ -605,7 +605,9 @@ const handleUpdateProject = async (e) => {
 
       if (!res.ok) throw new Error("Failed to delete user");
 
+      showNotificationModal('success', 'User Deleted', 'The user has been successfully deleted.');
       handleCloseUserDeleteDialog();
+      // Refresh the page data
       fetchUsers();
       fetchAdminData();
     } catch (err) {
@@ -1068,10 +1070,10 @@ const handleUpdateProject = async (e) => {
                   <Target className="w-6 h-6" />
                 </div>
                 <div className="stat-content">
-                  <div className="stat-label">Auctions</div>
-                  <div className="stat-value">{(stats.totalAuctions || 0)}</div>
+                  <div className="stat-label">Disputes</div>
+                  <div className="stat-value">{(stats.totalDisputes || 0)}</div>
                   <div className="stat-detail">
-                    <span className="stat-highlight">{(stats.activeAuctions || 0)}</span> active
+                    <span className="stat-highlight">{(stats.activeDisputes || 0)}</span> active
                   </div>
                 </div>
                 {/* <div className="stat-trend stat-trend-up">
@@ -1423,11 +1425,6 @@ const handleUpdateProject = async (e) => {
                                   {isBanned ? 'Unban' : 'Ban'}
                                 </button>
 
-                                {!user.verified && (
-                                  <button className="btn btn-success btn-sm">
-                                    <CheckSquare className="w-3 h-3" /> Verify
-                                  </button>
-                                )}
                               </div>
                             </div>
                           );
@@ -1469,7 +1466,7 @@ const handleUpdateProject = async (e) => {
                             <th>Budget</th>
                             <th>Status</th>
                             {/* <th>Bids</th> */}
-                            <th>Deadline</th>
+                            <th>Created</th>
                             <th>Actions</th>
                           </tr>
                         </thead>
@@ -1502,7 +1499,7 @@ const handleUpdateProject = async (e) => {
 
                               {/* <td>{project.bids_count || 0}</td> */}
 
-                              <td>{formatDate(project.deadline)}</td>
+                              <td>{formatDate(project.created_at)}</td>
 
                               <td>
                                 <div className="table-actions">
@@ -1639,13 +1636,6 @@ const handleUpdateProject = async (e) => {
                       >
                         <Ban className="w-4 h-4" />
                         <span>Ban User</span>
-                      </button>
-                      <button
-                        className="quick-action-btn-admin"
-                        onClick={() => openQuickAction('report')}
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>Generate Report</span>
                       </button>
                       <button
                         className="quick-action-btn-admin"
@@ -1881,41 +1871,6 @@ const handleUpdateProject = async (e) => {
         </div>
       )}
 
-      {quickActionModal === 'report' && (
-        <div className="modal-overlay" onClick={closeQuickAction}>
-          <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Generate Report</h2>
-              <button className="modal-close" onClick={closeQuickAction}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="modal-body">
-              <p>
-                Download a CSV summary of current platform metrics and the latest user snapshots.
-              </p>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-outline"
-                onClick={closeQuickAction}
-                disabled={reportGenerating}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleGenerateReport}
-                disabled={reportGenerating}
-              >
-                {reportGenerating ? 'Generating...' : 'Generate Report'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
 
       {/* Project Details Modal */}
