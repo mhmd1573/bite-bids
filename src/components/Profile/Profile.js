@@ -156,17 +156,28 @@ const Profile = ({ user }) => {
   // Handle save profile
   const handleSaveProfile = async (e) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (!editForm.name || !editForm.name.trim()) {
+      showNotificationModal('error', 'Validation Error', 'Name cannot be empty.');
+      return;
+    }
+    if (!editForm.email || !editForm.email.trim()) {
+      showNotificationModal('error', 'Validation Error', 'Email cannot be empty.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const token = localStorage.getItem('token');
 
       const updateData = {
-        name: editForm.name,
-        email: editForm.email,
-        company: editForm.company,
-        bio: editForm.bio,
-        address: editForm.address,
+        name: editForm.name.trim(),
+        email: editForm.email.trim(),
+        company: editForm.company?.trim() || '',
+        bio: editForm.bio?.trim() || '',
+        address: editForm.address?.trim() || '',
         skills: editForm.skills
       };
 

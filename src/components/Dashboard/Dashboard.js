@@ -1187,10 +1187,30 @@ const handleInitiatePostProject = async () => {
                           <span className="tech-badge-dash">+{project.tech_stack.length - 4}</span>
                         )}
                       </div>
-                    
+
+                      {/* Active Rooms Indicator */}
+                      {project.active_rooms_count > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                          borderRadius: '0.5rem',
+                          marginTop: '0.75rem',
+                          fontSize: '0.8rem',
+                          color: '#047857'
+                        }}>
+                          <Users className="w-4 h-4" />
+                          <span>
+                            <strong>{project.active_rooms_count}</strong> active chat room{project.active_rooms_count !== 1 ? 's' : ''} in progress
+                          </span>
+                        </div>
+                      )}
+
                       {/* Action Buttons */}
                       <div className="project-card-actions">
-                      
+
                         {/* View Project */}
                         <button
                          className="btn btn-primary btn-sm"
@@ -1335,10 +1355,30 @@ const handleInitiatePostProject = async () => {
                           <span className="tech-badge-dash">+{project.tech_stack.length - 4}</span>
                         )}
                       </div>
-                    
+
+                      {/* Active Rooms Indicator */}
+                      {project.active_rooms_count > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                          borderRadius: '0.5rem',
+                          marginTop: '0.75rem',
+                          fontSize: '0.8rem',
+                          color: '#047857'
+                        }}>
+                          <Users className="w-4 h-4" />
+                          <span>
+                            <strong>{project.active_rooms_count}</strong> active chat room{project.active_rooms_count !== 1 ? 's' : ''} in progress
+                          </span>
+                        </div>
+                      )}
+
                       {/* Action Buttons */}
                       <div className="project-card-actions">
-                      
+
                         <button
                          className="btn btn-primary btn-sm"
                          onClick={() => fetchProjectDetails(project.id)}
@@ -1456,11 +1496,31 @@ const handleInitiatePostProject = async () => {
                           <span className="tech-badge-dash">+{project.tech_stack.length - 4}</span>
                         )}
                       </div>
-                    
+
+                      {/* Active Rooms Indicator */}
+                      {project.active_rooms_count > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                          borderRadius: '0.5rem',
+                          marginTop: '0.75rem',
+                          fontSize: '0.8rem',
+                          color: '#047857'
+                        }}>
+                          <Users className="w-4 h-4" />
+                          <span>
+                            <strong>{project.active_rooms_count}</strong> active chat room{project.active_rooms_count !== 1 ? 's' : ''} in progress
+                          </span>
+                        </div>
+                      )}
+
                       {/* Action Buttons */}
                       <div className="project-card-actions">
-                       
-                        <button className="btn btn-primary btn-sm" 
+
+                        <button className="btn btn-primary btn-sm"
                         onClick={() => fetchProjectDetails(project.id)}
                         disabled={detailsLoading}>
                           View Project
@@ -1474,8 +1534,8 @@ const handleInitiatePostProject = async () => {
 
                           {/* Show Chat Now button when status is in_progress */}
                           {project.status === 'in_progress' && (
-                            <button 
-                              className="btn btn-success" 
+                            <button
+                              className="btn btn-success"
                               onClick={() => handleNavigation(`chat/${project.chat_room_id}`)}
                             >
                               <MessageSquare className="w-4 h-4" />
@@ -1591,11 +1651,31 @@ const handleInitiatePostProject = async () => {
                           <span className="tech-badge-dash">+{project.tech_stack.length - 4}</span>
                         )}
                       </div>
-                    
+
+                      {/* Active Rooms Indicator */}
+                      {project.active_rooms_count > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                          borderRadius: '0.5rem',
+                          marginTop: '0.75rem',
+                          fontSize: '0.8rem',
+                          color: '#047857'
+                        }}>
+                          <Users className="w-4 h-4" />
+                          <span>
+                            <strong>{project.active_rooms_count}</strong> active chat room{project.active_rooms_count !== 1 ? 's' : ''} in progress
+                          </span>
+                        </div>
+                      )}
+
                       {/* Action Buttons - Limited for closed projects */}
                       <div className="project-card-actions">
                         <button
-                          className="btn btn-primary btn-sm" 
+                          className="btn btn-primary btn-sm"
                           onClick={() => fetchProjectDetails(project.id)}
                           disabled={detailsLoading}>
                           View Project
@@ -1638,63 +1718,6 @@ const handleInitiatePostProject = async () => {
 
             {/* Right Sidebar */}
             <aside className="dashboard-sidebar">
-             
-              {/* Recent Activity */}
-              <div className="sidebar-card">
-                <div className="sidebar-card-header">
-                  <Bell className="w-5 h-5 text-warning-600" />
-                  <h3>Recent Activity</h3>
-                </div>
-                <div className="sidebar-card-body">
-                  <div 
-                    className="activity-list"
-                    style={{
-                      maxHeight: '400px',  // Approximate height for 4 items (each ~80px)
-                      overflowY: 'auto',
-                      overflowX: 'hidden',
-                      paddingRight: '0.5rem'
-                    }}
-                  >
-
-                  {notificationActivity.length === 0 ? (
-                      <div className="activity-item-dashboard">
-                        <div className="activity-content">
-                          <div className="activity-message">No notifications yet</div>
-                        </div>
-                      </div>
-                    ) : (
-                      notificationActivity.map((activity, index) => {
-                        const Icon = activity.icon;
-                        return (
-                          <div key={index} className="activity-item-dashboard">
-                            <div className={`activity-icon activity-icon-${activity.color}`}>
-                              <Icon className="w-4 h-4" />
-                            </div>
-                            <div className="activity-content">
-                              <div className="activity-message">{activity.message}</div>
-
-                              {activity.amount && (
-                                <div className="activity-amount">+${activity.amount.toLocaleString()}</div>
-                              )}
-
-                              {activity.rating && (
-                                <div className="activity-rating">
-                                  {[...Array(activity.rating)].map((_, i) => (
-                                    <Star key={i} className="w-3 h-3 fill-warning-400 text-warning-400" />
-                                  ))}
-                                </div>
-                              )}
-
-                              <div className="activity-time">{activity.time}</div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-
-                  </div>
-                </div>
-              </div>
 
               {/* Payout Settings Card */}
               <div className="sidebar-card payout-settings-card">
