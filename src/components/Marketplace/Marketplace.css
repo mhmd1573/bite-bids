@@ -694,16 +694,13 @@
   max-width: 900px !important;
   width: 90% !important;
   max-height: 90vh;
-  /* Changed to allow dropdown to overflow */
-  overflow: visible !important;
+  overflow-y: auto;
+  overflow-x: visible;
 }
 
 .post-project-modal-wide .modal-body {
-  /* Make modal body scrollable instead */
-  max-height: calc(90vh - 140px);
-  overflow-y: auto;
-  overflow-x: visible;
-  padding-bottom: 300px; /* Extra padding to allow dropdown space */
+  overflow: visible; /* Allow dropdown to overflow */
+  padding-bottom: var(--spacing-8);
 }
 
 .form-grid-2 {
@@ -1535,14 +1532,14 @@
   .post-project-modal-wide {
     max-width: 95% !important;
     width: 95% !important;
-    /* Allow dropdown overflow */
-    overflow: visible !important;
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: visible;
   }
 
   .post-project-modal-wide .modal-body {
-    overflow-y: auto !important;
-    overflow-x: visible !important;
-    padding-bottom: 350px;
+    overflow: visible;
+    padding-bottom: var(--spacing-6);
   }
 
   .post-project-modal-wide .form-grid {
