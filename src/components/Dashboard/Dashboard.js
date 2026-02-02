@@ -1452,14 +1452,16 @@ const handleInitiatePostProject = async () => {
                           </span>
                         </div>
 
-                        <div className="project-meta-item">
-                          <Calendar className="w-4 h-4 text-secondary" />
-                          <span>{project.bids_count} Bids</span>
-                        </div>
+                        {project.status !== 'fixed_price' && (
+                          <div className="project-meta-item">
+                            <Calendar className="w-4 h-4 text-secondary" />
+                            <span>{project.bids_count} Bids</span>
+                          </div>
+                        )}
 
                         <div className="project-meta-item">
                           <Clock className="w-4 h-4 text-secondary" />
-                          
+
                           <span>
                             {project.created_at
                               ? (() => {
@@ -1469,7 +1471,7 @@ const handleInitiatePostProject = async () => {
                                   const diffMins = Math.floor(diffMs / 60000);
                                   const diffHours = Math.floor(diffMs / 3600000);
                                   const diffDays = Math.floor(diffMs / 86400000);
-                                  
+
                                   if (diffMins < 60) {
                                     return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
                                   } else if (diffHours < 24) {
@@ -1607,14 +1609,16 @@ const handleInitiatePostProject = async () => {
                           </span>
                         </div>
 
-                        <div className="project-meta-item">
-                          <Calendar className="w-4 h-4 text-secondary" />
-                          <span>{project.bids_count} Bids</span>
-                        </div>
+                        {project.status !== 'fixed_price' && (
+                          <div className="project-meta-item">
+                            <Calendar className="w-4 h-4 text-secondary" />
+                            <span>{project.bids_count} Bids</span>
+                          </div>
+                        )}
 
                         <div className="project-meta-item">
                           <Clock className="w-4 h-4 text-secondary" />
-                          
+
                           <span>
                             {project.created_at
                               ? (() => {
@@ -1624,7 +1628,7 @@ const handleInitiatePostProject = async () => {
                                   const diffMins = Math.floor(diffMs / 60000);
                                   const diffHours = Math.floor(diffMs / 3600000);
                                   const diffDays = Math.floor(diffMs / 86400000);
-                                  
+
                                   if (diffMins < 60) {
                                     return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
                                   } else if (diffHours < 24) {
@@ -1946,16 +1950,18 @@ const handleInitiatePostProject = async () => {
                           </div>
                         </div>
         
-                        <div className="stat-item">
-                          <Users className="stat-icon-market text-secondary" />
-                          <div>
-                            <div className="stat-value">{selectedProjectDetails.bids_count}</div>
-                            <div className="stat-label">Bids</div>
+                        {selectedProjectDetails.status !== 'fixed_price' && (
+                          <div className="stat-item">
+                            <Users className="stat-icon-market text-secondary" />
+                            <div>
+                              <div className="stat-value">{selectedProjectDetails.bids_count}</div>
+                              <div className="stat-label">Bids</div>
+                            </div>
                           </div>
-                        </div>
-        
+                        )}
+
                       </div>
-        
+
                       {/* Description */}
                       <div className="project-details-section">
                         <h3 className="section-title">Project Description</h3>

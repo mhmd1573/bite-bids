@@ -1993,16 +1993,18 @@ const handleUpdateProject = async (e) => {
                                 </div>
                               </div>
               
-                              <div className="stat-item">
-                                <Users className="stat-icon-market text-secondary" />
-                                <div>
-                                  <div className="stat-value">{selectedProjectDetails.bids_count}</div>
-                                  <div className="stat-label">Bids</div>
+                              {selectedProjectDetails.status !== 'fixed_price' && (
+                                <div className="stat-item">
+                                  <Users className="stat-icon-market text-secondary" />
+                                  <div>
+                                    <div className="stat-value">{selectedProjectDetails.bids_count}</div>
+                                    <div className="stat-label">Bids</div>
+                                  </div>
                                 </div>
-                              </div>
-              
+                              )}
+
                             </div>
-              
+
                             {/* Description */}
                             <div className="project-details-section">
                               <h3 className="section-title">Project Description</h3>

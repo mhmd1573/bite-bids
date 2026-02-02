@@ -1988,16 +1988,7 @@ const renderFileTree = (items, parentPath = '') => {
 
           {/* Show completion badge when both steps done */}
           {isDeveloper && projectDeliveryComplete && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 0.75rem',
-              background: '#d1fae5',
-              borderRadius: '8px',
-              fontSize: '0.8rem',
-              color: '#065f46'
-            }}>
+            <div className="project-delivered-badge">
               <CheckCircle2 size={14} />
               <span>Project delivered</span>
             </div>

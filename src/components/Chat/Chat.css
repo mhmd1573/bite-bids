@@ -161,6 +161,54 @@ main:has(.chat-page) {
   box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
 }
 
+/* Project Delivered Badge */
+.project-delivered-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #d1fae5;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #065f46;
+  white-space: nowrap;
+}
+
+/* Responsive Download Button and Delivered Badge */
+@media (max-width: 768px) {
+  .download-project-btn {
+    min-width: auto !important;
+    padding: 0.5rem !important;
+  }
+
+  .download-project-btn span {
+    display: none;
+  }
+
+  .project-delivered-badge {
+    padding: 0.5rem;
+  }
+
+  .project-delivered-badge span {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .download-project-btn {
+    min-width: 40px !important;
+    min-height: 40px;
+    padding: 0.5rem !important;
+  }
+
+  .project-delivered-badge {
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+}
+
 .review-timer {
   display: flex;
   align-items: center;
