@@ -72,6 +72,7 @@ const [uploadMethod, setUploadMethod] = useState(null); // 'github' or 'upload'
 const [uploadingProject, setUploadingProject] = useState(false);
 const [projectUpload, setProjectUpload] = useState(null); // Uploaded project info
 const folderInputRef = useRef(null);
+const zipFileInputRef = useRef(null);
 
 // ✅ Add this new state at the top of Chat component (around line 35)
 const [hasActiveDispute, setHasActiveDispute] = useState(false);
@@ -942,6 +943,170 @@ const handleFolderSelect = async (e) => {
     setUploadProgress(0);
     if (folderInputRef.current) {
       folderInputRef.current.value = '';
+    }
+  }
+};
+
+// ✅ NEW: Handle ZIP file upload (existing ZIP file)
+const handleZipFileSelect = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Validate it's a ZIP file
+  if (!file.name.toLowerCase().endsWith('.zip')) {
+    showNotification('error', 'Invalid File', 'Please select a ZIP file.');
+    return;
+  }
+
+  // Check size limit (5GB)
+  const maxSize = 5 * 1024 * 1024 * 1024;
+  if (file.size > maxSize) {
+    showNotification('error', 'File Too Large', 'File size must be under 5GB.');
+    return;
+  }
+
+  setUploadingProject(true);
+  setUploadProgress(0);
+
+  try {
+    // Read ZIP file to extract file tree
+    const JSZip = (await import('jszip')).default;
+    const zipContent = await JSZip.loadAsync(file);
+
+    // Generate file tree from ZIP contents
+    const fileTree = { name: file.name.replace('.zip', ''), type: 'folder', children: [] };
+    const pathMap = new Map();
+    pathMap.set('', fileTree);
+
+    // Sort entries to process directories first
+    const entries = Object.keys(zipContent.files).sort();
+
+    for (const path of entries) {
+      const zipEntry = zipContent.files[path];
+      const parts = path.split('/').filter(p => p);
+
+      if (parts.length === 0) continue;
+
+      let currentPath = '';
+      let parent = fileTree;
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        const isLast = i === parts.length - 1;
+        const newPath = currentPath ? `${currentPath}/${part}` : part;
+
+        if (!pathMap.has(newPath)) {
+          const node = {
+            name: part,
+            type: (isLast && !zipEntry.dir) ? 'file' : 'folder',
+            ...(isLast && !zipEntry.dir ? { size: zipEntry._data?.uncompressedSize || 0 } : { children: [] })
+          };
+          parent.children.push(node);
+          pathMap.set(newPath, node);
+        }
+
+        parent = pathMap.get(newPath);
+        currentPath = newPath;
+      }
+    }
+
+    // Sort tree
+    const sortTree = (node) => {
+      if (node.children) {
+        node.children.sort((a, b) => {
+          if (a.type === 'folder' && b.type !== 'folder') return -1;
+          if (a.type !== 'folder' && b.type === 'folder') return 1;
+          return a.name.localeCompare(b.name);
+        });
+        node.children.forEach(sortTree);
+      }
+    };
+    sortTree(fileTree);
+
+    setUploadProgress(10);
+
+    // Get presigned upload URL
+    const presignedResponse = await fetch(`${BACKEND_URL}/api/upload/presigned-url/${roomId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        file_name: file.name,
+        file_size: file.size,
+        content_type: 'application/zip'
+      })
+    });
+
+    if (!presignedResponse.ok) {
+      const error = await presignedResponse.json();
+      throw new Error(error.detail || 'Failed to get upload URL');
+    }
+
+    const { presigned_url, file_key } = await presignedResponse.json();
+
+    // Upload to R2 using XMLHttpRequest for progress tracking
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const uploadPercent = Math.round((event.loaded / event.total) * 85);
+          setUploadProgress(10 + uploadPercent); // 10-95% for upload
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error('Upload failed'));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Upload failed'));
+
+      xhr.open('PUT', presigned_url);
+      xhr.setRequestHeader('Content-Type', 'application/zip');
+      xhr.send(file);
+    });
+
+    // Complete upload by saving metadata
+    const completeResponse = await fetch(`${BACKEND_URL}/api/upload/complete/${roomId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        file_key: file_key,
+        file_name: file.name,
+        file_size: file.size,
+        file_tree: fileTree
+      })
+    });
+
+    if (!completeResponse.ok) {
+      throw new Error('Failed to complete upload');
+    }
+
+    setUploadProgress(100);
+    showNotification('success', 'Upload Complete', 'Project uploaded successfully!');
+    setShowSubmitRepoModal(false);
+    setUploadMethod(null);
+
+    // Refresh to show the uploaded project
+    fetchProjectUpload();
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    showNotification('error', 'Upload Failed', error.message || 'Failed to upload project.');
+  } finally {
+    setUploadingProject(false);
+    setUploadProgress(0);
+    if (zipFileInputRef.current) {
+      zipFileInputRef.current.value = '';
     }
   }
 };
@@ -2419,73 +2584,117 @@ const renderFileTree = (items, parentPath = '') => {
                     </div>
                   </div>
 
-                  <div className="form-group" style={{ marginTop: '1.5rem' }}>
-                    <label>Select Project Folder</label>
-                    <input
-                      type="file"
-                      ref={folderInputRef}
-                      onChange={handleFolderSelect}
-                      webkitdirectory=""
-                      directory=""
-                      multiple
-                      style={{ display: 'none' }}
-                    />
+                  {/* Hidden file inputs */}
+                  <input
+                    type="file"
+                    ref={folderInputRef}
+                    onChange={handleFolderSelect}
+                    webkitdirectory=""
+                    directory=""
+                    multiple
+                    style={{ display: 'none' }}
+                  />
+                  <input
+                    type="file"
+                    ref={zipFileInputRef}
+                    onChange={handleZipFileSelect}
+                    accept=".zip"
+                    style={{ display: 'none' }}
+                  />
 
-                    {!uploadingProject ? (
-                      <button
-                        type="button"
-                        onClick={() => folderInputRef.current?.click()}
-                        className="btn-secondary"
-                        style={{
-                          width: '100%',
-                          padding: '2rem',
-                          border: '2px dashed #10b981',
-                          borderRadius: '12px',
-                          background: '#f0fdf4',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '0.5rem'
-                        }}
-                      >
-                        <Cloud size={32} style={{ color: '#10b981' }} />
-                        <span style={{ fontWeight: 600 }}>Click to select project folder</span>
-                        <span style={{ fontSize: '0.85rem', color: '#888' }}>
-                          Maximum size: 5GB
-                        </span>
-                      </button>
-                    ) : (
-                      <div style={{
-                        padding: '2rem',
-                        border: '2px solid #10b981',
-                        borderRadius: '12px',
-                        background: '#f0fdf4',
-                        textAlign: 'center'
-                      }}>
-                        <Loader size={32} className="spinning" style={{ color: '#10b981', marginBottom: '1rem' }} />
-                        <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
-                          {uploadProgress < 30 ? 'Compressing files...' : 'Uploading to cloud...'}
-                        </div>
-                        <div style={{
-                          width: '100%',
-                          height: '8px',
-                          background: '#e0e0e0',
-                          borderRadius: '4px',
-                          overflow: 'hidden',
-                          marginTop: '1rem'
-                        }}>
-                          <div style={{
-                            width: `${uploadProgress}%`,
-                            height: '100%',
-                            background: 'linear-gradient(90deg, #10b981, #059669)',
-                            transition: 'width 0.3s ease'
-                          }} />
-                        </div>
-                        <div style={{ marginTop: '0.5rem', color: '#666' }}>{uploadProgress}%</div>
+                  {!uploadingProject ? (
+                    <div style={{ marginTop: '1.5rem' }}>
+                      <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 500 }}>
+                        Choose upload method:
+                      </label>
+                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        {/* Option 1: Select Folder */}
+                        <button
+                          type="button"
+                          onClick={() => folderInputRef.current?.click()}
+                          className="btn-secondary"
+                          style={{
+                            flex: 1,
+                            minWidth: '180px',
+                            padding: '1.5rem',
+                            border: '2px dashed #10b981',
+                            borderRadius: '12px',
+                            background: '#f0fdf4',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                          }}
+                        >
+                          <Folder size={28} style={{ color: '#10b981' }} />
+                          <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Select Folder</span>
+                          <span style={{ fontSize: '0.8rem', color: '#888' }}>
+                            Auto-compress to ZIP
+                          </span>
+                        </button>
+
+                        {/* Option 2: Upload ZIP */}
+                        <button
+                          type="button"
+                          onClick={() => zipFileInputRef.current?.click()}
+                          className="btn-secondary"
+                          style={{
+                            flex: 1,
+                            minWidth: '180px',
+                            padding: '1.5rem',
+                            border: '2px dashed #2563eb',
+                            borderRadius: '12px',
+                            background: '#eff6ff',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                          }}
+                        >
+                          <FileText size={28} style={{ color: '#2563eb' }} />
+                          <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Upload ZIP File</span>
+                          <span style={{ fontSize: '0.8rem', color: '#888' }}>
+                            Already compressed
+                          </span>
+                        </button>
                       </div>
-                    )}
-                  </div>
+                      <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888', textAlign: 'center' }}>
+                        Maximum size: 5GB
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{
+                      padding: '2rem',
+                      border: '2px solid #10b981',
+                      borderRadius: '12px',
+                      background: '#f0fdf4',
+                      textAlign: 'center',
+                      marginTop: '1.5rem'
+                    }}>
+                      <Loader size={32} className="spinning" style={{ color: '#10b981', marginBottom: '1rem' }} />
+                      <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
+                        {uploadProgress < 10 ? 'Preparing files...' : 'Uploading to cloud...'}
+                      </div>
+                      <div style={{
+                        width: '100%',
+                        height: '8px',
+                        background: '#e0e0e0',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                        marginTop: '1rem'
+                      }}>
+                        <div style={{
+                          width: `${uploadProgress}%`,
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #10b981, #059669)',
+                          transition: 'width 0.3s ease'
+                        }} />
+                      </div>
+                      <div style={{ marginTop: '0.5rem', color: '#666' }}>{uploadProgress}%</div>
+                    </div>
+                  )}
                 </div>
               )}
 
