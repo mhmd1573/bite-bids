@@ -723,9 +723,16 @@
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet and below - Single scroll container */
 @media (max-width: 1024px) {
   .auth-container {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .auth-branding-side {
@@ -734,33 +741,45 @@
 
   .auth-form-side {
     padding: var(--spacing-8) var(--spacing-6);
-  }
-}
-
-@media (max-width: 768px) {
-  .auth-form-side {
-    padding: var(--spacing-6) var(--spacing-4);
-  }
-
-  .auth-card {
-    padding: var(--spacing-8) var(--spacing-6);
-  }
-
-  .auth-card-wide {
-    max-width: 100%;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible; /* Remove internal scroll */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: var(--spacing-8);
+    padding-bottom: var(--spacing-8);
   }
 
   .auth-card,
   .auth-card-wide {
-    /* max-height: none;
-    overflow: visible; */
+    max-height: none; /* Remove card height constraint */
+    overflow: visible; /* Remove card internal scroll */
+    margin: auto 0; /* Center vertically if content is short */
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 0;
+  }
+
+  .auth-form-side {
+    padding: var(--spacing-6) var(--spacing-4);
+    padding-top: var(--spacing-6);
+    padding-bottom: var(--spacing-10);
   }
 
   .auth-card {
+    padding: var(--spacing-8) var(--spacing-6);
     padding-right: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
   }
 
   .auth-card-wide {
+    max-width: 100%;
     padding-right: var(--spacing-6);
   }
 
@@ -780,6 +799,60 @@
 
   .auth-card .btn-oauth {
     width: 100%;
+  }
+}
+
+/* Small mobile - More compact */
+@media (max-width: 480px) {
+  .auth-form-side {
+    padding: var(--spacing-4) var(--spacing-3);
+    padding-bottom: var(--spacing-8);
+  }
+
+  .auth-card,
+  .auth-card-wide {
+    padding: var(--spacing-6) var(--spacing-4);
+    border-radius: var(--radius-lg);
+  }
+
+  .card-header {
+    margin-bottom: var(--spacing-6);
+  }
+
+  .card-title {
+    font-size: var(--text-xl);
+  }
+
+  .card-description {
+    font-size: var(--text-sm);
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-4);
+  }
+
+  .form-input {
+    padding: var(--spacing-3);
+    font-size: var(--text-sm);
+  }
+
+  .auth-card .btn-primary {
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--text-sm);
+  }
+
+  .switch-mode-text {
+    font-size: var(--text-sm);
+    margin-top: var(--spacing-4);
+  }
+
+  .oauth-buttons {
+    margin-top: var(--spacing-6);
+  }
+
+  .oauth-divider {
+    margin-bottom: var(--spacing-4);
+    font-size: var(--text-xs);
   }
 }
 

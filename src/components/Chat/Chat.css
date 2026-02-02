@@ -1267,12 +1267,15 @@ main:has(.chat-page) {
   }
 
   /* Modals - properly sized on mobile, not full screen */
-  .modal-overlay {
+  /* Scoped to chat component only to avoid affecting other modals */
+  .chat-page .modal-overlay,
+  .chat-container .modal-overlay {
     padding: 1rem;
     z-index: 100000;
   }
 
-  .modal-content {
+  .chat-page .modal-content,
+  .chat-container .modal-content {
     max-width: calc(100% - 2rem);
     width: 100%;
     height: auto;
@@ -1281,7 +1284,8 @@ main:has(.chat-page) {
     margin: auto;
   }
 
-  .modal-header {
+  .chat-page .modal-header,
+  .chat-container .modal-header {
     padding: 1rem;
     position: sticky;
     top: 0;
@@ -1289,16 +1293,19 @@ main:has(.chat-page) {
     z-index: 10;
   }
 
-  .modal-header h2 {
+  .chat-page .modal-header h2,
+  .chat-container .modal-header h2 {
     font-size: 1.125rem;
   }
 
-  .modal-body {
+  .chat-page .modal-body,
+  .chat-container .modal-body {
     padding: 1rem;
     overflow-y: auto;
   }
 
-  .modal-footer {
+  .chat-page .modal-footer,
+  .chat-container .modal-footer {
     padding: 1rem;
     gap: 0.5rem;
     position: sticky;
@@ -1306,9 +1313,11 @@ main:has(.chat-page) {
     background: white;
   }
 
-  /* Form elements in modals */
-  .form-select,
-  .form-textarea {
+  /* Form elements in chat modals */
+  .chat-page .form-select,
+  .chat-page .form-textarea,
+  .chat-container .form-select,
+  .chat-container .form-textarea {
     font-size: 0.875rem;
   }
 
@@ -3275,7 +3284,8 @@ body:has(.chat-page) {
     padding: 0.5rem;
   }
 
-  .modal-content {
+  .chat-page .modal-content,
+  .chat-container .modal-content {
     max-width: calc(100% - 1rem);
     border-radius: 0.75rem;
   }
