@@ -1016,7 +1016,7 @@ useEffect(() => {
     if (!isVisible || currentPage === 'login') return null;
 
     return (
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 md:bottom-6 md:right-6 md:gap-3">
+      <div className="scroll-buttons-container fixed bottom-4 right-4 z-50 flex flex-col gap-2 md:bottom-6 md:right-6 md:gap-3">
         {showBottom && (
           <button
             onClick={scrollToBottom}

@@ -423,7 +423,7 @@
 }
 
 .message-text {
-  padding: 1rem;
+  /* padding: 1rem; */
   background: var(--gray-50);
   border-radius: var(--radius-md);
   color: var(--text-primary);

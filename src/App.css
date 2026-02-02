@@ -2287,3 +2287,16 @@ body.mobile-menu-open {
   width: 100% !important;
   height: 100% !important;
 }
+
+/* ============================================
+   HIDE SCROLL BUTTONS WHEN MODALS ARE OPEN
+   ============================================ */
+
+/* Hide scroll buttons when any modal overlay is present */
+body:has(.modal-overlay) .scroll-buttons-container,
+body:has(.notification-overlay) .scroll-buttons-container,
+body:has(.oauth-modal-overlay) .scroll-buttons-container,
+body:has(.review-modal-overlay) .scroll-buttons-container,
+body:has(.fullscreen-overlay) .scroll-buttons-container {
+  display: none !important;
+}
