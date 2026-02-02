@@ -1865,16 +1865,10 @@ const renderFileTree = (items, parentPath = '') => {
     });
   };
 
-  // Check if required data is loaded
+  // Check if required data is loaded - return null to avoid duplicate spinner
+  // (ChatPage.js already shows a loading spinner)
   if (!roomData || !currentUser) {
-    return (
-      <div className="chat-container">
-        <div className="chat-loading">
-          <Loader className="spinning" size={32} />
-          <p>Loading chat...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const isDeveloper = roomData.developer_id === currentUser.id;
