@@ -83,3 +83,120 @@
 .notification-modal .notification-footer .btn {
   min-width: 120px;
 }
+
+/* ============================================
+   NOTIFICATION MODAL - MOBILE RESPONSIVE
+   ============================================ */
+
+/* Notification overlay - ensure it's above everything */
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 1rem;
+}
+
+/* Mobile-specific notification modal styles */
+@media (max-width: 768px) {
+  .notification-overlay {
+    padding: 1.5rem;
+  }
+
+  .notification-modal {
+    max-width: calc(100% - 2rem);
+    width: 100%;
+    max-height: auto;
+    height: auto;
+    border-radius: 1rem;
+    margin: auto;
+  }
+
+  .notification-modal .notification-header {
+    padding: 1.25rem 1.25rem 0;
+  }
+
+  .notification-icon-wrapper {
+    width: 56px;
+    height: 56px;
+  }
+
+  .notification-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .notification-modal .notification-body {
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .notification-modal .notification-title {
+    font-size: 1.125rem;
+  }
+
+  .notification-modal .notification-message {
+    font-size: 0.875rem;
+  }
+
+  .notification-modal .notification-footer {
+    padding: 0.875rem 1.25rem;
+  }
+
+  .notification-modal .notification-footer .btn {
+    min-width: 100px;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-overlay {
+    padding: 1rem;
+  }
+
+  .notification-modal {
+    max-width: calc(100% - 1rem);
+  }
+
+  .notification-modal .notification-header {
+    padding: 1rem 1rem 0;
+  }
+
+  .notification-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0.75rem;
+  }
+
+  .notification-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .notification-modal .notification-body {
+    padding: 0 1rem 1rem;
+  }
+
+  .notification-modal .notification-title {
+    font-size: 1rem;
+  }
+
+  .notification-modal .notification-message {
+    font-size: 0.8125rem;
+  }
+
+  .notification-modal .notification-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  .notification-modal .notification-footer .btn {
+    min-width: 90px;
+    padding: 0.5rem 0.875rem;
+  }
+}

@@ -43,7 +43,7 @@ export const NotificationProvider = ({ children }) => {
     <NotificationContext.Provider value={value}>
       {children}
       {notification && (
-        <div className="modal-overlay" onClick={closeNotification}>
+        <div className="notification-overlay" onClick={closeNotification}>
           <div
             className={`modal-content modal-sm notification-modal notification-${notification.type}`}
             onClick={(event) => event.stopPropagation()}
