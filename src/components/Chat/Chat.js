@@ -2547,6 +2547,27 @@ const renderFileTree = (items, parentPath = '') => {
               {/* Step 1: GitHub Repository Form */}
               {!hasGithubRepo && (
                 <div>
+                  {/* Private Repo Warning Banner */}
+                  {showPrivateRepoWarning && (
+                    <div className="private-repo-warning" style={{
+                      background: '#fef3c7',
+                      border: '1px solid #f59e0b',
+                      borderRadius: '8px',
+                      padding: '1rem',
+                      marginBottom: '1rem',
+                      display: 'flex',
+                      gap: '0.75rem'
+                    }}>
+                      <Shield size={20} style={{ color: '#d97706', flexShrink: 0 }} />
+                      <div>
+                        <strong style={{ color: '#92400e' }}>Private Repository Detected</strong>
+                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: '#a16207' }}>
+                          This repository is private. Please provide a GitHub Personal Access Token to grant read access.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="github-info-banner">
                     <Shield size={20} />
                     <div>
@@ -2570,6 +2591,80 @@ const renderFileTree = (items, parentPath = '') => {
                       Example: https://github.com/facebook/react
                     </span>
                   </div>
+
+                  {/* Access Token Input for Private Repos */}
+                  <div className="form-group" style={{ marginTop: '1rem' }}>
+                    <label htmlFor="access-token" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      GitHub Personal Access Token
+                      {!isPrivateRepo && (
+                        <span style={{
+                          fontSize: '0.75rem',
+                          background: '#e5e7eb',
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: '4px',
+                          color: '#6b7280'
+                        }}>Optional - For Private Repos</span>
+                      )}
+                      {isPrivateRepo && (
+                        <span style={{
+                          fontSize: '0.75rem',
+                          background: '#fef3c7',
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: '4px',
+                          color: '#92400e'
+                        }}>Required for Private Repo</span>
+                      )}
+                    </label>
+                    <input
+                      id="access-token"
+                      type="password"
+                      className="form-select"
+                      value={accessToken}
+                      onChange={(e) => setAccessToken(e.target.value)}
+                      placeholder="ghp_..."
+                      required={isPrivateRepo}
+                    />
+                    <span className="form-hint">
+                      {isPrivateRepo ? (
+                        <>
+                          Your repository is private.
+                          <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" style={{marginLeft: '4px', color: '#2563eb'}}>
+                            Create a token
+                          </a> with <code style={{ background: '#f3f4f6', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>repo</code> scope.
+                        </>
+                      ) : (
+                        <>
+                          Only needed for private repositories.
+                          <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" style={{marginLeft: '4px', color: '#2563eb'}}>
+                            Create a token
+                          </a> if needed.
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Token Security Notice */}
+                  {(accessToken || isPrivateRepo) && (
+                    <div style={{
+                      background: '#f0fdf4',
+                      border: '1px solid #10b981',
+                      borderRadius: '8px',
+                      padding: '1rem',
+                      marginTop: '1rem',
+                      display: 'flex',
+                      gap: '0.75rem'
+                    }}>
+                      <Shield size={18} style={{ color: '#059669', flexShrink: 0 }} />
+                      <div style={{ fontSize: '0.85rem' }}>
+                        <strong style={{ color: '#065f46' }}>🔒 Security Notice:</strong>
+                        <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: '#047857' }}>
+                          <li>Token is encrypted and stored securely</li>
+                          <li>Only used to fetch code for review</li>
+                          <li>You can revoke it anytime from GitHub</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2729,7 +2824,7 @@ const renderFileTree = (items, parentPath = '') => {
                 <button
                   className="btn-primary"
                   onClick={handleSubmitRepo}
-                  disabled={submittingRepo || !repoUrl.trim()}
+                  disabled={submittingRepo || !repoUrl.trim() || (isPrivateRepo && !accessToken.trim())}
                 >
                   {submittingRepo ? (
                     <>
