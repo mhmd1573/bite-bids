@@ -1004,10 +1004,12 @@ useEffect(() => {
                           </span>
                         </div>
 
-                        <div className="project-meta-item">
-                          <Users className="w-4 h-4 text-secondary" />
-                          <span>{project.bids_count} bids</span>
-                        </div>
+                        {project.status !== 'fixed_price' && (
+                          <div className="project-meta-item">
+                            <Users className="w-4 h-4 text-secondary" />
+                            <span>{project.bids_count} bids</span>
+                          </div>
+                        )}
 
                       </div>
 
@@ -1659,13 +1661,15 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="stat-item">
-                  <Users className="stat-icon-market text-secondary" />
-                  <div>
-                    <div className="stat-value">{selectedProjectDetails.bids_count}</div>
-                    <div className="stat-label">Bids</div>
+                {selectedProjectDetails.status !== 'fixed_price' && (
+                  <div className="stat-item">
+                    <Users className="stat-icon-market text-secondary" />
+                    <div>
+                      <div className="stat-value">{selectedProjectDetails.bids_count}</div>
+                      <div className="stat-label">Bids</div>
+                    </div>
                   </div>
-                </div>
+                )}
 
               </div>
 
