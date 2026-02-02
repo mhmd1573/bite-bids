@@ -1897,9 +1897,11 @@ const renderFileTree = (items, parentPath = '') => {
 
   // Developer can submit if they haven't completed BOTH steps (GitHub + Upload required)
   const canSubmitRepo = isDeveloper && (!hasGithubRepo || !hasUploadedProject);
-  // Project can be reviewed only if GitHub repo exists (for code preview)
-  const canReviewProject = hasGithubRepo;
-  // Project can be downloaded only if uploaded to cloud
+  // Project can be reviewed only when BOTH GitHub repo AND upload exist
+  const canReviewProject = hasGithubRepo && hasUploadedProject;
+  // Download button visibility:
+  // - Developer: can download when upload exists
+  // - Investor: can only download AFTER confirming the project
   const canDownloadProject = hasUploadedProject && (isDeveloper || hasConfirmedProject);
   // Both steps completed - project delivery is ready
   const projectDeliveryComplete = hasGithubRepo && hasUploadedProject;
@@ -2019,14 +2021,14 @@ const renderFileTree = (items, parentPath = '') => {
             </button>
           )}
 
-          {/* ✅ NEW: Download Project Button (only if uploaded to cloud) */}
+          {/* ✅ Download Project Button - Downloads from R2 Cloud */}
           {canDownloadProject && (
             <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <button
                 className="chat-action-btn download-project-btn"
-                onClick={hasUploadedProject ? handleDownloadUploadedProject : handleDownloadProject}
+                onClick={handleDownloadUploadedProject}
                 disabled={downloadingProject}
-                title={hasUploadedProject ? "Download from cloud" : "Download from GitHub"}
+                title="Download project from cloud"
                 style={{ minWidth: '180px', position: 'relative', overflow: 'hidden' }}
               >
                 {downloadingProject ? (
