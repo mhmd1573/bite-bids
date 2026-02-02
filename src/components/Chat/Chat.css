@@ -718,7 +718,7 @@ main:has(.chat-page) {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 100000;
   padding: 1rem;
 }
 
@@ -905,6 +905,7 @@ main:has(.chat-page) {
 
 .review-modal-overlay {
   backdrop-filter: blur(4px);
+  z-index: 100000;
 }
 
 .review-modal {
@@ -1268,7 +1269,7 @@ main:has(.chat-page) {
   /* Modals - properly sized on mobile, not full screen */
   .modal-overlay {
     padding: 1rem;
-    z-index: 9999;
+    z-index: 100000;
   }
 
   .modal-content {
@@ -1488,6 +1489,7 @@ main:has(.chat-page) {
 
 .review-modal-overlay {
   background: rgba(0, 0, 0, 0.75);
+  z-index: 100000;
 }
 
 .review-modal {
@@ -2039,6 +2041,7 @@ main:has(.chat-page) {
 .fullscreen-overlay {
   background: rgba(0, 0, 0, 0.95) !important;
   backdrop-filter: blur(10px);
+  z-index: 100000 !important;
 }
 
 /* Fullscreen Modal */
@@ -3063,6 +3066,12 @@ body:has(.chat-page) {
     bottom: 0;
     height: auto;
     overflow: hidden;
+    z-index: 1010; /* Below navbar (1020) normally */
+  }
+
+  /* When modal is open, raise chat-page above navbar */
+  .chat-page:has(.modal-overlay) {
+    z-index: 100000;
   }
 
   .chat-container {
@@ -3212,13 +3221,13 @@ body:has(.chat-page) {
   /* Base modal overlay - high z-index to be above navbar */
   .chat-container .modal-overlay,
   .chat-page .modal-overlay {
-    z-index: 99999;
+    z-index: 100000;
     padding: 1rem;
   }
 
   /* Review modal specific */
   .review-modal-overlay {
-    z-index: 99999;
+    z-index: 100000;
     padding: 0.5rem;
   }
 
