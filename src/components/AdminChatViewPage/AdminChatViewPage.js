@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  ArrowLeft, 
-  User, 
-  FolderOpen, 
+import {
+  ArrowLeft,
+  User,
+  FolderOpen,
   MessageCircle,
   Clock,
   CheckCheck,
@@ -19,7 +19,8 @@ import {
   Loader,
   Maximize,
   Minimize,
-  Shield
+  Shield,
+  Cloud
 } from 'lucide-react';
 import './AdminChatViewPage.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -47,6 +48,11 @@ const AdminChatViewPage = ({ roomId, navigateBack }) => {
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // ✅ NEW: Project Upload/Download States
+  const [projectUpload, setProjectUpload] = useState(null);
+  const [downloadingProject, setDownloadingProject] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   
   const messagesEndRef = useRef(null);
 
@@ -54,7 +60,8 @@ const AdminChatViewPage = ({ roomId, navigateBack }) => {
     if (roomId) {
       fetchRoomData();
       fetchMessages();
-      fetchGithubRepo(); // ✅ NEW
+      fetchGithubRepo();
+      fetchProjectUpload(); // ✅ NEW: Fetch upload info
     }
   }, [roomId]);
 
@@ -122,6 +129,92 @@ const AdminChatViewPage = ({ roomId, navigateBack }) => {
       }
     } catch (error) {
       console.error('Error fetching GitHub repo:', error);
+    }
+  };
+
+  // ✅ NEW: Fetch project upload info from R2
+  const fetchProjectUpload = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/upload/info/${roomId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProjectUpload(data.upload);
+      }
+    } catch (error) {
+      console.error('Error fetching upload info:', error);
+    }
+  };
+
+  // ✅ NEW: Download uploaded project from R2 cloud
+  const handleDownloadUploadedProject = async () => {
+    setDownloadingProject(true);
+    setDownloadProgress(0);
+
+    try {
+      // Get presigned download URL
+      const response = await fetch(`${BACKEND_URL}/api/upload/download-url/${roomId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to get download URL');
+      }
+
+      const { download_url, file_name } = await response.json();
+
+      // Download using XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', download_url, true);
+      xhr.responseType = 'blob';
+
+      xhr.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setDownloadProgress(percent);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const blob = xhr.response;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file_name;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+
+          showNotification('success', 'Download Complete', 'Project downloaded successfully!');
+        } else {
+          throw new Error('Download failed');
+        }
+        setDownloadingProject(false);
+        setDownloadProgress(0);
+      };
+
+      xhr.onerror = () => {
+        showNotification('error', 'Download Failed', 'Failed to download project.');
+        setDownloadingProject(false);
+        setDownloadProgress(0);
+      };
+
+      xhr.send();
+
+    } catch (error) {
+      console.error('Download error:', error);
+      showNotification('error', 'Download Failed', error.message || 'Failed to download project.');
+      setDownloadingProject(false);
+      setDownloadProgress(0);
     }
   };
 
@@ -449,15 +542,37 @@ const AdminChatViewPage = ({ roomId, navigateBack }) => {
         </div>
 
         <div className="header-actions">
-          {/* ✅ NEW: Preview Project Button */}
+          {/* ✅ Preview Project Button */}
           {githubRepo && githubRepo.repo_url && (
-            <button 
-              className="btn-preview-project" 
+            <button
+              className="btn-preview-project"
               onClick={loadRepoStructure}
               title="Preview submitted project"
             >
               <FolderTree size={18} />
               Preview Project
+            </button>
+          )}
+
+          {/* ✅ NEW: Download Project Button */}
+          {projectUpload && (
+            <button
+              className="btn-download-project"
+              onClick={handleDownloadUploadedProject}
+              disabled={downloadingProject}
+              title="Download project from cloud"
+            >
+              {downloadingProject ? (
+                <>
+                  <Loader size={18} className="spinning" />
+                  {downloadProgress > 0 ? `${downloadProgress}%` : 'Downloading...'}
+                </>
+              ) : (
+                <>
+                  <Cloud size={18} />
+                  Download Project
+                </>
+              )}
             </button>
           )}
 

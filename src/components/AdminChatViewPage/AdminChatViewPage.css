@@ -704,6 +704,47 @@
   transform: translateY(0);
 }
 
+/* Download Project Button */
+.btn-download-project {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.btn-download-project:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.btn-download-project:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-download-project:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.btn-download-project .spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Export Button Update */
 .btn-export-chat {
   display: flex;
@@ -1015,6 +1056,7 @@
   }
 
   .btn-preview-project,
+  .btn-download-project,
   .btn-export-chat {
     width: 100%;
     justify-content: center;
