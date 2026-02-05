@@ -2974,9 +2974,10 @@ const renderFileTree = (items, parentPath = '') => {
                   <p>To receive automatic payments, you need to connect your Stripe account. This is a one-time setup.</p>
                   <button
                     className="btn-primary"
+                    style={{ margin: 'auto' }}
                     onClick={() => {
                       setShowPayoutModal(false);
-                      window.location.href = '/dashboard?tab=payout-settings';
+                      window.location.href = '/payout-settings';
                     }}
                   >
                     <CreditCard size={18} />
