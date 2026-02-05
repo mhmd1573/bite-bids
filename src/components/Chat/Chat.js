@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertTriangle, Shield, Loader, Download, X, FolderTree, FileText, Folder, ChevronRight, ChevronDown, Wallet, CreditCard, Building2, Bitcoin, Globe, DollarSign, AlertCircle, CheckCircle2, Upload, Cloud } from 'lucide-react';
+import { Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertTriangle, Shield, Loader, Download, X, FolderTree, FileText, Folder, ChevronRight, ChevronDown, Wallet, CreditCard, DollarSign, AlertCircle, CheckCircle2, Upload, Cloud, Clock } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import './Chat.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -80,7 +80,6 @@ const [hasActiveDispute, setHasActiveDispute] = useState(false);
 // ✅ Developer Payout States
 const [pendingPayout, setPendingPayout] = useState(null);
 const [showPayoutModal, setShowPayoutModal] = useState(false);
-const [savingPayout, setSavingPayout] = useState(false);
 
 // ✅ Project Download State (for investor after confirmation)
 const [downloadingProject, setDownloadingProject] = useState(false);
@@ -667,45 +666,6 @@ useEffect(() => {
     }
   };
 
-  // ✅ UPDATED: Confirm payout receipt (simplified - no form needed)
-  const handleConfirmPayoutReceipt = async () => {
-    // Check if developer has set up payout method in dashboard
-    if (!pendingPayout.developer_preferences?.has_payout_method) {
-      showNotification('error', 'Payout Method Required', 'Please set up your payout method in the Dashboard first.');
-      setShowPayoutModal(false);
-      return;
-    }
-
-    setSavingPayout(true);
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/chat/rooms/${roomId}/confirm-payout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        showNotification(
-          'success',
-          'Payment Confirmed!',
-          'Your payment will be transferred to your account. For any questions, contact bitebids@gmail.com'
-        );
-        setShowPayoutModal(false);
-        fetchPendingPayout(); // Refresh payout data
-      } else {
-        const error = await response.json();
-        showNotification('error', 'Error', error.detail || 'Failed to confirm payout');
-      }
-    } catch (error) {
-      console.error('Error confirming payout:', error);
-      showNotification('error', 'Error', 'Failed to confirm payout. Please contact bitebids@gmail.com');
-    } finally {
-      setSavingPayout(false);
-    }
-  };
 
 
 
@@ -1933,18 +1893,22 @@ const renderFileTree = (items, parentPath = '') => {
         </div>
         
         <div className="chat-header-actions">
-          {/* ✅ NEW: Developer Receive Payment Button */}
+          {/* ✅ Developer Payment Status Button (Stripe Connect) */}
           {isDeveloper && pendingPayout?.has_pending_payout && (
             <button
-              className="chat-action-btn receive-payment-btn"
+              className={`chat-action-btn receive-payment-btn ${pendingPayout.payout?.status === 'completed' ? 'completed' : ''}`}
               onClick={() => setShowPayoutModal(true)}
-              title="Set up payout method to receive payment"
+              title="View payment status"
             >
               <DollarSign size={18} />
               <span>
-                {pendingPayout.developer_preferences?.has_payout_method
-                  ? `Receive $${pendingPayout.payout?.net_amount?.toFixed(2)}`
-                  : 'Set Up Payout'}
+                {!pendingPayout.stripe_connect?.is_connected
+                  ? 'Connect Stripe'
+                  : pendingPayout.payout?.status === 'completed'
+                    ? `Paid $${pendingPayout.payout?.net_amount?.toFixed(2)}`
+                    : pendingPayout.payout?.status === 'processing'
+                      ? 'Processing...'
+                      : `$${pendingPayout.payout?.net_amount?.toFixed(2)} Pending`}
               </span>
             </button>
           )}
@@ -2987,38 +2951,36 @@ const renderFileTree = (items, parentPath = '') => {
       </div>
       )}
 
-      {/* ✅ UPDATED: Simplified Payout Confirmation Modal */}
+      {/* ✅ Stripe Connect Automatic Payout Modal */}
       {showPayoutModal && pendingPayout && (
-        <div className="modal-overlay" onClick={() => !savingPayout && setShowPayoutModal(false)}>
+        <div className="modal-overlay" onClick={() => setShowPayoutModal(false)}>
           <div className="modal-content payout-confirmation-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>💰 Confirm Payment Receipt</h2>
+              <h2>💰 Payment Status</h2>
               <button
                 className="modal-close"
                 onClick={() => setShowPayoutModal(false)}
-                disabled={savingPayout}
               >
                 ×
               </button>
             </div>
 
             <div className="modal-body">
-              {/* Check if payout method is configured */}
-              {!pendingPayout.developer_preferences?.has_payout_method ? (
+              {/* Check if Stripe Connect is set up */}
+              {!pendingPayout.stripe_connect?.is_connected ? (
                 <div className="payout-warning-banner">
                   <AlertCircle size={48} />
-                  <h3>Payout Method Not Configured</h3>
-                  <p>Please set up your payout method in your Dashboard before receiving payment.</p>
+                  <h3>Stripe Connect Not Set Up</h3>
+                  <p>To receive automatic payments, you need to connect your Stripe account. This is a one-time setup.</p>
                   <button
                     className="btn-primary"
                     onClick={() => {
                       setShowPayoutModal(false);
-                      // Navigate to dashboard payout settings
                       window.location.href = '/dashboard?tab=payout-settings';
                     }}
                   >
-                    <Wallet size={18} />
-                    Go to Payout Settings
+                    <CreditCard size={18} />
+                    Connect Stripe Account
                   </button>
                 </div>
               ) : (
@@ -3045,75 +3007,62 @@ const renderFileTree = (items, parentPath = '') => {
                     </div>
                   </div>
 
-                  {/* Payment Method Display */}
+                  {/* Stripe Transfer Status */}
                   <div className="payout-method-display">
-                    <h3>Payment Method</h3>
-                    <div className="selected-payment-method">
+                    <h3>Transfer Status</h3>
+                    <div className="selected-payment-method stripe-transfer">
                       <div className="method-icon-display">
-                        {pendingPayout.developer_preferences.payout_method === 'paypal' && <CreditCard size={24} />}
-                        {pendingPayout.developer_preferences.payout_method === 'wise' && <Globe size={24} />}
-                        {pendingPayout.developer_preferences.payout_method === 'bank_transfer' && <Building2 size={24} />}
-                        {pendingPayout.developer_preferences.payout_method === 'crypto' && <Bitcoin size={24} />}
-                        {pendingPayout.developer_preferences.payout_method === 'other' && <Wallet size={24} />}
+                        <CreditCard size={24} />
                       </div>
                       <div className="method-details">
-                        <span className="method-name-display">
-                          {pendingPayout.developer_preferences.payout_method === 'paypal' && 'PayPal'}
-                          {pendingPayout.developer_preferences.payout_method === 'wise' && 'Wise (TransferWise)'}
-                          {pendingPayout.developer_preferences.payout_method === 'bank_transfer' && 'Bank Transfer'}
-                          {pendingPayout.developer_preferences.payout_method === 'crypto' && 'Cryptocurrency'}
-                          {pendingPayout.developer_preferences.payout_method === 'other' && 'Other Method'}
+                        <span className="method-name-display">Stripe Connect</span>
+                        <span className="method-status">
+                          {pendingPayout.payout?.status === 'completed' ? (
+                            <span className="status-completed">
+                              <CheckCircle2 size={16} /> Transferred to your bank
+                            </span>
+                          ) : pendingPayout.payout?.status === 'processing' ? (
+                            <span className="status-processing">
+                              <Loader size={16} className="spinning" /> Processing transfer...
+                            </span>
+                          ) : (
+                            <span className="status-pending">
+                              <Clock size={16} /> Pending transfer
+                            </span>
+                          )}
                         </span>
-                        {pendingPayout.developer_preferences.payout_email && (
-                          <span className="method-email-display">
-                            {pendingPayout.developer_preferences.payout_email}
-                          </span>
-                        )}
                       </div>
-                      <CheckCircle2 className="verified-icon" size={20} />
+                      {pendingPayout.payout?.status === 'completed' && (
+                        <CheckCircle2 className="verified-icon" size={20} />
+                      )}
                     </div>
+                    {pendingPayout.payout?.stripe_transfer_id && (
+                      <div className="transfer-id">
+                        Transfer ID: {pendingPayout.payout.stripe_transfer_id}
+                      </div>
+                    )}
                   </div>
 
                   {/* Info Banner */}
                   <div className="payout-info-banner success">
                     <Shield size={20} />
                     <div>
-                      <strong>Payment will be transferred to your account</strong>
-                      <p>Your payment will be processed within 1-3 business days. For any questions or support, contact <strong>bitebids@gmail.com</strong></p>
+                      <strong>Automatic payout via Stripe</strong>
+                      <p>Your payment is being automatically transferred to your connected bank account. Funds typically arrive within 1-2 business days.</p>
                     </div>
                   </div>
                 </>
               )}
             </div>
 
-            {pendingPayout.developer_preferences?.has_payout_method && (
-              <div className="modal-footer">
-                <button
-                  className="btn-secondary"
-                  onClick={() => setShowPayoutModal(false)}
-                  disabled={savingPayout}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn-success"
-                  onClick={handleConfirmPayoutReceipt}
-                  disabled={savingPayout}
-                >
-                  {savingPayout ? (
-                    <>
-                      <Loader size={18} className="spinning" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <DollarSign size={18} />
-                      Confirm & Receive Payment
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
+            <div className="modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowPayoutModal(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

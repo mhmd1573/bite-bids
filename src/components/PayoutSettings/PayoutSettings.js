@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Wallet, CreditCard, Building2, Bitcoin, Globe,
-  Save, Check, AlertCircle, DollarSign, Clock,
-  CheckCircle, XCircle, RefreshCw, ChevronDown
+  Wallet, CreditCard, ExternalLink,
+  Check, AlertCircle, DollarSign, Clock,
+  CheckCircle, XCircle, RefreshCw, Loader
 } from 'lucide-react';
 import './PayoutSettings.css';
 import { useNotification } from '../NotificationModal/NotificationModal';
@@ -12,13 +12,12 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
 const PayoutSettings = () => {
   const { showNotification } = useNotification();
 
-  // Payout preferences state
-  const [preferences, setPreferences] = useState({
-    payout_method: '',
-    payout_email: '',
-    payout_details: {},
-    payout_currency: 'USD',
-    payout_verified: false,
+  // Stripe Connect status
+  const [stripeStatus, setStripeStatus] = useState({
+    stripe_account_id: null,
+    stripe_account_status: null,
+    stripe_payouts_enabled: false,
+    stripe_onboarding_completed: false,
     total_earnings: 0
   });
 
@@ -28,26 +27,30 @@ const PayoutSettings = () => {
 
   // UI state
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [activeSection, setActiveSection] = useState('preferences');
+  const [connecting, setConnecting] = useState(false);
+  const [activeSection, setActiveSection] = useState('connect');
 
-  // Payment methods
-  const paymentMethods = [
-    { id: 'paypal', name: 'PayPal', icon: <CreditCard size={20} />, description: 'Receive payments to your PayPal account' },
-    { id: 'wise', name: 'Wise (TransferWise)', icon: <Globe size={20} />, description: 'Low-fee international transfers' },
-    { id: 'bank_transfer', name: 'Bank Transfer', icon: <Building2 size={20} />, description: 'Direct deposit to your bank account' },
-    { id: 'crypto', name: 'Cryptocurrency', icon: <Bitcoin size={20} />, description: 'Receive payments in crypto (USDT, USDC)' },
-    { id: 'other', name: 'Other', icon: <Wallet size={20} />, description: 'Specify your preferred method' }
-  ];
+  // Check for Stripe redirect params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('stripe_success') === 'true') {
+      showNotification('success', 'Stripe Connected', 'Your Stripe account has been set up successfully!');
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (urlParams.get('stripe_refresh') === 'true') {
+      showNotification('info', 'Setup Incomplete', 'Please complete your Stripe account setup.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchPreferences();
+    fetchStripeStatus();
     fetchPayoutHistory();
   }, []);
 
-  const fetchPreferences = async () => {
+  const fetchStripeStatus = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/users/me/payout-preferences`, {
+      const response = await fetch(`${BACKEND_URL}/api/stripe-connect/account-status`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -55,10 +58,10 @@ const PayoutSettings = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setPreferences(data);
+        setStripeStatus(data);
       }
     } catch (error) {
-      console.error('Error fetching payout preferences:', error);
+      console.error('Error fetching Stripe status:', error);
     } finally {
       setLoading(false);
     }
@@ -74,54 +77,60 @@ const PayoutSettings = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setPayouts(data.payouts);
-        setPendingTotal(data.pending_total);
+        setPayouts(data.payouts || []);
+        setPendingTotal(data.pending_total || 0);
       }
     } catch (error) {
       console.error('Error fetching payout history:', error);
     }
   };
 
-  const handleSavePreferences = async () => {
-    if (!preferences.payout_method) {
-      showNotification('error', 'Required', 'Please select a payout method');
-      return;
-    }
-
-    if (['paypal', 'wise'].includes(preferences.payout_method) && !preferences.payout_email) {
-      showNotification('error', 'Required', 'Please enter your payment email address');
-      return;
-    }
-
-    setSaving(true);
-
+  const handleConnectStripe = async () => {
+    setConnecting(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/users/me/payout-preferences`, {
-        method: 'PUT',
+      const response = await fetch(`${BACKEND_URL}/api/stripe-connect/create-account`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          payout_method: preferences.payout_method,
-          payout_email: preferences.payout_email,
-          payout_details: preferences.payout_details,
-          payout_currency: preferences.payout_currency
-        })
+        }
       });
 
       if (response.ok) {
-        showNotification('success', 'Saved', 'Payout preferences updated successfully');
-        setPreferences(prev => ({ ...prev, payout_verified: false }));
+        const data = await response.json();
+        if (data.onboarding_url) {
+          window.location.href = data.onboarding_url;
+        }
       } else {
         const error = await response.json();
-        showNotification('error', 'Error', error.detail || 'Failed to save preferences');
+        showNotification('error', 'Error', error.detail || 'Failed to start Stripe Connect setup');
       }
     } catch (error) {
-      console.error('Error saving preferences:', error);
-      showNotification('error', 'Error', 'Failed to save preferences');
+      console.error('Error connecting Stripe:', error);
+      showNotification('error', 'Error', 'Failed to connect with Stripe');
     } finally {
-      setSaving(false);
+      setConnecting(false);
+    }
+  };
+
+  const handleOpenStripeDashboard = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/stripe-connect/dashboard-link`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.dashboard_url) {
+          window.open(data.dashboard_url, '_blank');
+        }
+      } else {
+        showNotification('error', 'Error', 'Failed to open Stripe dashboard');
+      }
+    } catch (error) {
+      console.error('Error opening dashboard:', error);
+      showNotification('error', 'Error', 'Failed to open Stripe dashboard');
     }
   };
 
@@ -166,14 +175,14 @@ const PayoutSettings = () => {
           <Wallet className="header-icon" size={28} />
           <div>
             <h2>Payout Settings</h2>
-            <p>Manage how you receive payments for completed projects</p>
+            <p>Receive automatic payments via Stripe when projects are completed</p>
           </div>
         </div>
 
         <div className="earnings-summary">
           <div className="earnings-card">
             <span className="label">Total Earnings</span>
-            <span className="value">${preferences.total_earnings?.toFixed(2) || '0.00'}</span>
+            <span className="value">${stripeStatus.total_earnings?.toFixed(2) || '0.00'}</span>
           </div>
           <div className="earnings-card pending">
             <span className="label">Pending Payout</span>
@@ -185,11 +194,11 @@ const PayoutSettings = () => {
       {/* Section Tabs */}
       <div className="section-tabs">
         <button
-          className={`section-tab ${activeSection === 'preferences' ? 'active' : ''}`}
-          onClick={() => setActiveSection('preferences')}
+          className={`section-tab ${activeSection === 'connect' ? 'active' : ''}`}
+          onClick={() => setActiveSection('connect')}
         >
           <CreditCard size={18} />
-          Payment Method
+          Stripe Connect
         </button>
         <button
           className={`section-tab ${activeSection === 'history' ? 'active' : ''}`}
@@ -201,239 +210,148 @@ const PayoutSettings = () => {
         </button>
       </div>
 
-      {/* Preferences Section */}
-      {activeSection === 'preferences' && (
+      {/* Stripe Connect Section */}
+      {activeSection === 'connect' && (
         <div className="preferences-section">
-          {/* Verification Status */}
-          {preferences.payout_method && (
-            <div className={`verification-banner ${preferences.payout_verified ? 'verified' : 'unverified'}`}>
-              {preferences.payout_verified ? (
-                <>
-                  <Check size={20} />
-                  <span>Your payout method has been verified</span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle size={20} />
-                  <span>Your payout method is pending verification by admin</span>
-                </>
-              )}
-            </div>
-          )}
+          {/* Connected Status */}
+          {stripeStatus.stripe_payouts_enabled ? (
+            <div className="stripe-connected">
+              <div className="connected-banner verified">
+                <CheckCircle size={24} />
+                <div>
+                  <h3>Stripe Connected</h3>
+                  <p>Your account is set up to receive automatic payouts</p>
+                </div>
+              </div>
 
-          {/* Payment Method Selection */}
-          <div className="form-section">
-            <h3>Select Payment Method</h3>
-            <div className="payment-methods">
-              {paymentMethods.map(method => (
-                <div
-                  key={method.id}
-                  className={`payment-method-card ${preferences.payout_method === method.id ? 'selected' : ''}`}
-                  onClick={() => setPreferences(prev => ({ ...prev, payout_method: method.id }))}
+              <div className="stripe-info-card">
+                <div className="info-row">
+                  <span className="label">Account Status</span>
+                  <span className="value status-enabled">
+                    <CheckCircle size={16} /> Enabled
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Payouts</span>
+                  <span className="value status-enabled">
+                    <CheckCircle size={16} /> Active
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Account ID</span>
+                  <span className="value account-id">{stripeStatus.stripe_account_id}</span>
+                </div>
+              </div>
+
+              <div className="stripe-actions">
+                <button className="btn btn-secondary" onClick={handleOpenStripeDashboard}>
+                  <ExternalLink size={18} />
+                  Open Stripe Dashboard
+                </button>
+                <button className="btn btn-outline" onClick={fetchStripeStatus}>
+                  <RefreshCw size={18} />
+                  Refresh Status
+                </button>
+              </div>
+
+              <div className="stripe-note">
+                <AlertCircle size={16} />
+                <p>
+                  When an investor confirms project completion, your payment will be automatically
+                  transferred to your connected Stripe account. Funds typically arrive in 1-2 business days.
+                </p>
+              </div>
+            </div>
+          ) : stripeStatus.stripe_account_id ? (
+            /* Account created but not fully set up */
+            <div className="stripe-pending">
+              <div className="connected-banner unverified">
+                <AlertCircle size={24} />
+                <div>
+                  <h3>Complete Your Setup</h3>
+                  <p>Your Stripe account needs additional information to receive payouts</p>
+                </div>
+              </div>
+
+              <div className="stripe-info-card">
+                <div className="info-row">
+                  <span className="label">Account Status</span>
+                  <span className="value status-pending">
+                    <Clock size={16} /> Pending Setup
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Payouts</span>
+                  <span className="value status-disabled">
+                    <XCircle size={16} /> Not Enabled
+                  </span>
+                </div>
+              </div>
+
+              <div className="stripe-actions">
+                <button
+                  className="btn btn-primary"
+                  onClick={handleConnectStripe}
+                  disabled={connecting}
                 >
-                  <div className="method-icon">{method.icon}</div>
-                  <div className="method-info">
-                    <span className="method-name">{method.name}</span>
-                    <span className="method-desc">{method.description}</span>
-                  </div>
-                  {preferences.payout_method === method.id && (
-                    <Check className="selected-check" size={20} />
+                  {connecting ? (
+                    <>
+                      <Loader size={18} className="spin" />
+                      Opening Stripe...
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink size={18} />
+                      Complete Setup
+                    </>
                   )}
-                </div>
-              ))}
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* Payment Details Form */}
-          {preferences.payout_method && (
-            <div className="form-section">
-              <h3>Payment Details</h3>
-
-              {/* PayPal / Wise - Email */}
-              {['paypal', 'wise'].includes(preferences.payout_method) && (
-                <div className="form-group">
-                  <label>
-                    {preferences.payout_method === 'paypal' ? 'PayPal Email' : 'Wise Email'}
-                  </label>
-                  <input
-                    type="email"
-                    value={preferences.payout_email || ''}
-                    onChange={(e) => setPreferences(prev => ({ ...prev, payout_email: e.target.value }))}
-                    placeholder={`Enter your ${preferences.payout_method === 'paypal' ? 'PayPal' : 'Wise'} email`}
-                  />
+          ) : (
+            /* No account - show connect button */
+            <div className="stripe-not-connected">
+              <div className="connect-prompt">
+                <div className="stripe-logo">
+                  <CreditCard size={48} />
                 </div>
-              )}
+                <h3>Connect with Stripe</h3>
+                <p>
+                  To receive payments for completed projects, you need to connect your
+                  Stripe account. This is a one-time setup that takes about 2-3 minutes.
+                </p>
 
-              {/* Bank Transfer Details */}
-              {preferences.payout_method === 'bank_transfer' && (
-                <>
-                  <div className="form-group">
-                    <label>Account Holder Name</label>
-                    <input
-                      type="text"
-                      value={preferences.payout_details?.account_name || ''}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        payout_details: { ...prev.payout_details, account_name: e.target.value }
-                      }))}
-                      placeholder="Full name as on bank account"
-                    />
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Bank Name</label>
-                      <input
-                        type="text"
-                        value={preferences.payout_details?.bank_name || ''}
-                        onChange={(e) => setPreferences(prev => ({
-                          ...prev,
-                          payout_details: { ...prev.payout_details, bank_name: e.target.value }
-                        }))}
-                        placeholder="Bank name"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Country</label>
-                      <input
-                        type="text"
-                        value={preferences.payout_details?.country || ''}
-                        onChange={(e) => setPreferences(prev => ({
-                          ...prev,
-                          payout_details: { ...prev.payout_details, country: e.target.value }
-                        }))}
-                        placeholder="Country"
-                      />
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>IBAN / Account Number</label>
-                      <input
-                        type="text"
-                        value={preferences.payout_details?.iban || ''}
-                        onChange={(e) => setPreferences(prev => ({
-                          ...prev,
-                          payout_details: { ...prev.payout_details, iban: e.target.value }
-                        }))}
-                        placeholder="IBAN or Account Number"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>SWIFT / BIC Code</label>
-                      <input
-                        type="text"
-                        value={preferences.payout_details?.swift || ''}
-                        onChange={(e) => setPreferences(prev => ({
-                          ...prev,
-                          payout_details: { ...prev.payout_details, swift: e.target.value }
-                        }))}
-                        placeholder="SWIFT/BIC code"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+                <ul className="benefits-list">
+                  <li><Check size={16} /> Automatic payouts when projects are confirmed</li>
+                  <li><Check size={16} /> Funds deposited directly to your bank account</li>
+                  <li><Check size={16} /> Track all your earnings in one place</li>
+                  <li><Check size={16} /> Secure and trusted by millions worldwide</li>
+                </ul>
 
-              {/* Crypto Details */}
-              {preferences.payout_method === 'crypto' && (
-                <>
-                  <div className="form-group">
-                    <label>Cryptocurrency</label>
-                    <select
-                      value={preferences.payout_details?.crypto_type || 'usdt'}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        payout_details: { ...prev.payout_details, crypto_type: e.target.value }
-                      }))}
-                    >
-                      <option value="usdt">USDT (Tether)</option>
-                      <option value="usdc">USDC</option>
-                      <option value="btc">Bitcoin (BTC)</option>
-                      <option value="eth">Ethereum (ETH)</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Network</label>
-                    <select
-                      value={preferences.payout_details?.network || 'trc20'}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        payout_details: { ...prev.payout_details, network: e.target.value }
-                      }))}
-                    >
-                      <option value="trc20">TRC20 (Tron)</option>
-                      <option value="erc20">ERC20 (Ethereum)</option>
-                      <option value="bep20">BEP20 (BSC)</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Wallet Address</label>
-                    <input
-                      type="text"
-                      value={preferences.payout_details?.wallet_address || ''}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        payout_details: { ...prev.payout_details, wallet_address: e.target.value }
-                      }))}
-                      placeholder="Your crypto wallet address"
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Other Method */}
-              {preferences.payout_method === 'other' && (
-                <div className="form-group">
-                  <label>Payment Instructions</label>
-                  <textarea
-                    value={preferences.payout_details?.instructions || ''}
-                    onChange={(e) => setPreferences(prev => ({
-                      ...prev,
-                      payout_details: { ...prev.payout_details, instructions: e.target.value }
-                    }))}
-                    placeholder="Describe your preferred payment method and provide necessary details..."
-                    rows={4}
-                  />
-                </div>
-              )}
-
-              {/* Currency Selection */}
-              <div className="form-group">
-                <label>Preferred Currency</label>
-                <select
-                  value={preferences.payout_currency || 'USD'}
-                  onChange={(e) => setPreferences(prev => ({ ...prev, payout_currency: e.target.value }))}
+                <button
+                  className="btn btn-primary btn-connect"
+                  onClick={handleConnectStripe}
+                  disabled={connecting}
                 >
-                  <option value="USD">USD - US Dollar</option>
-                  <option value="EUR">EUR - Euro</option>
-                  <option value="GBP">GBP - British Pound</option>
-                  <option value="CAD">CAD - Canadian Dollar</option>
-                  <option value="AUD">AUD - Australian Dollar</option>
-                </select>
+                  {connecting ? (
+                    <>
+                      <Loader size={20} className="spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={20} />
+                      Connect with Stripe
+                    </>
+                  )}
+                </button>
+
+                <p className="stripe-note-small">
+                  You'll be redirected to Stripe to complete the setup securely.
+                </p>
               </div>
             </div>
           )}
-
-          {/* Save Button */}
-          <div className="form-actions">
-            <button
-              className="btn btn-primary"
-              onClick={handleSavePreferences}
-              disabled={saving || !preferences.payout_method}
-            >
-              {saving ? (
-                <>
-                  <RefreshCw size={18} className="spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save size={18} />
-                  Save Payout Settings
-                </>
-              )}
-            </button>
-          </div>
         </div>
       )}
 
@@ -455,7 +373,7 @@ const PayoutSettings = () => {
                     <th>Description</th>
                     <th>Amount</th>
                     <th>Status</th>
-                    <th>Transaction ID</th>
+                    <th>Transfer ID</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -469,7 +387,7 @@ const PayoutSettings = () => {
                       </td>
                       <td>{getStatusBadge(payout.status)}</td>
                       <td className="transaction-id">
-                        {payout.transaction_id || '-'}
+                        {payout.stripe_transfer_id || payout.transaction_id || '-'}
                       </td>
                     </tr>
                   ))}

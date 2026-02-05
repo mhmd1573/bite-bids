@@ -448,6 +448,230 @@
   color: var(--error-700, #b91c1c);
 }
 
+/* ============================================
+   STRIPE CONNECT STYLES
+   ============================================ */
+
+/* Connected Banner */
+.connected-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.connected-banner.verified {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border: 1px solid #86efac;
+}
+
+.connected-banner.verified svg {
+  color: #15803d;
+}
+
+.connected-banner.unverified {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #fcd34d;
+}
+
+.connected-banner.unverified svg {
+  color: #b45309;
+}
+
+.connected-banner h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.connected-banner p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+/* Stripe Info Card */
+.stripe-info-card {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row .label {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+.info-row .value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.info-row .value.status-enabled {
+  color: #15803d;
+}
+
+.info-row .value.status-pending {
+  color: #b45309;
+}
+
+.info-row .value.status-disabled {
+  color: #b91c1c;
+}
+
+.info-row .value.account-id {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Stripe Actions */
+.stripe-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-secondary {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--background);
+  border-color: var(--primary);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+}
+
+/* Stripe Note */
+.stripe-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--info-100, #dbeafe);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--info-700, #1d4ed8);
+}
+
+.stripe-note svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.stripe-note p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Connect Prompt (Not Connected State) */
+.stripe-not-connected {
+  display: flex;
+  justify-content: center;
+}
+
+.connect-prompt {
+  max-width: 450px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.stripe-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #635bff 0%, #8b5cf6 100%);
+  border-radius: 20px;
+  color: white;
+}
+
+.connect-prompt h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  color: var(--text-primary);
+}
+
+.connect-prompt > p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  text-align: left;
+}
+
+.benefits-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.benefits-list li svg {
+  color: #15803d;
+  flex-shrink: 0;
+}
+
+.btn-connect {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #635bff 0%, #8b5cf6 100%);
+}
+
+.btn-connect:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5046e4 0%, #7c3aed 100%);
+}
+
+.stripe-note-small {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin: 1rem 0 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .payout-settings {
@@ -481,5 +705,13 @@
   .payouts-table th,
   .payouts-table td {
     padding: 0.625rem 0.5rem;
+  }
+
+  .stripe-actions {
+    flex-direction: column;
+  }
+
+  .connect-prompt {
+    padding: 1rem;
   }
 }

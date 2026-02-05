@@ -45,6 +45,15 @@ const DashboardAdmin = ({ navigateToPage }) => {
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+  // ✅ Handle URL query parameter for tab selection (e.g., ?tab=disputes)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && ['overview', 'users', 'projects', 'disputes'].includes(tabParam)) {
+      setSelectedTab(tabParam);
+    }
+  }, []);
+
   
   const [stats, setStats] = useState({});
   const [recentUsers, setRecentUsers] = useState([]);

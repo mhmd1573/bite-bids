@@ -2913,6 +2913,58 @@ input[type="password"].form-select::placeholder {
   flex-shrink: 0;
 }
 
+/* Stripe Transfer Status */
+.method-status {
+  font-size: 0.875rem;
+}
+
+.method-status span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.status-completed {
+  color: #059669;
+  font-weight: 500;
+}
+
+.status-processing {
+  color: #d97706;
+  font-weight: 500;
+}
+
+.status-pending {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.transfer-id {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+}
+
+.selected-payment-method.stripe-transfer {
+  border-color: #6366f1;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+}
+
+.selected-payment-method.stripe-transfer .method-icon-display {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+/* Receive Payment Button States */
+.receive-payment-btn.completed {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: white;
+}
+
 /* Success Info Banner */
 .payout-info-banner.success {
   background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
