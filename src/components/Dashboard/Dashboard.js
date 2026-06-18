@@ -1779,7 +1779,7 @@ const handleInitiatePostProject = async () => {
                 </div>
                 <div className="sidebar-card-body">
                   <p className="sidebar-card-description">
-                    Set up your payment method to receive earnings from completed projects.
+                    Set up your Payoneer account to receive earnings from completed projects.
                   </p>
                   <button
                     className="payout-settings-btn"

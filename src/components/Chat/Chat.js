@@ -2951,7 +2951,7 @@ const renderFileTree = (items, parentPath = '') => {
       </div>
       )}
 
-      {/* ✅ Stripe Connect Automatic Payout Modal */}
+      {/* ✅ Payoneer Payout Modal */}
       {showPayoutModal && pendingPayout && (
         <div className="modal-overlay" onClick={() => setShowPayoutModal(false)}>
           <div className="modal-content payout-confirmation-modal" onClick={(e) => e.stopPropagation()}>
@@ -2966,12 +2966,12 @@ const renderFileTree = (items, parentPath = '') => {
             </div>
 
             <div className="modal-body">
-              {/* Check if Stripe Connect is set up */}
-              {!pendingPayout.stripe_connect?.is_connected ? (
+              {/* Check if Payoneer is set up */}
+              {!pendingPayout.payoneer_connected ? (
                 <div className="payout-warning-banner">
                   <AlertCircle size={48} />
-                  <h3>Stripe Connect Not Set Up</h3>
-                  <p>To receive automatic payments, you need to connect your Stripe account. This is a one-time setup.</p>
+                  <h3>Payoneer Not Set Up</h3>
+                  <p>To receive automatic payments, you need to connect your Payoneer account. This is a one-time setup.</p>
                   <button
                     className="btn-primary"
                     style={{ margin: 'auto' }}
@@ -2981,7 +2981,7 @@ const renderFileTree = (items, parentPath = '') => {
                     }}
                   >
                     <CreditCard size={18} />
-                    Connect Stripe Account
+                    Connect Payoneer Account
                   </button>
                 </div>
               ) : (
@@ -3008,15 +3008,15 @@ const renderFileTree = (items, parentPath = '') => {
                     </div>
                   </div>
 
-                  {/* Stripe Transfer Status */}
+                  {/* Payoneer Transfer Status */}
                   <div className="payout-method-display">
                     <h3>Transfer Status</h3>
-                    <div className="selected-payment-method stripe-transfer">
+                    <div className="selected-payment-method payoneer-transfer">
                       <div className="method-icon-display">
                         <CreditCard size={24} />
                       </div>
                       <div className="method-details">
-                        <span className="method-name-display">Stripe Connect</span>
+                        <span className="method-name-display">Payoneer</span>
                         <span className="method-status">
                           {pendingPayout.payout?.status === 'completed' ? (
                             <span className="status-completed">
@@ -3037,9 +3037,9 @@ const renderFileTree = (items, parentPath = '') => {
                         <CheckCircle2 className="verified-icon" size={20} />
                       )}
                     </div>
-                    {pendingPayout.payout?.stripe_transfer_id && (
+                    {pendingPayout.payout?.payoneer_transfer_id && (
                       <div className="transfer-id">
-                        Transfer ID: {pendingPayout.payout.stripe_transfer_id}
+                        Payoneer ID: {pendingPayout.payout.payoneer_transfer_id}
                       </div>
                     )}
                   </div>
@@ -3048,7 +3048,7 @@ const renderFileTree = (items, parentPath = '') => {
                   <div className="payout-info-banner success">
                     <Shield size={20} />
                     <div>
-                      <strong>Automatic payout via Stripe</strong>
+                      <strong>Automatic payout via Payoneer</strong>
                       <p>Your payment is being automatically transferred to your connected bank account. Funds typically arrive within 1-2 business days.</p>
                     </div>
                   </div>
@@ -3067,6 +3067,7 @@ const renderFileTree = (items, parentPath = '') => {
           </div>
         </div>
       )}
+
 
     </div>
   );

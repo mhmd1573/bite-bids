@@ -145,8 +145,8 @@ const AdminPayouts = () => {
       <div className="stripe-info-banner">
         <CreditCard size={20} />
         <div>
-          <strong>Automatic Payouts via Stripe Connect</strong>
-          <p>All developer payouts are processed automatically through Stripe. When an investor confirms a project, funds are instantly transferred to the developer's connected Stripe account.</p>
+          <strong>Automatic Payouts via Payoneer</strong>
+          <p>All developer payouts are processed automatically through Payoneer. When an investor confirms a project, funds are instantly transferred to the developer's connected Payoneer account.</p>
         </div>
       </div>
 
@@ -274,16 +274,19 @@ const AdminPayouts = () => {
                       <span className="fee">Fee: ${payout.platform_fee?.toFixed(2)}</span>
                     </div>
                   </td>
+                  
                   <td className="transfer-cell">
-                    {payout.stripe_transfer_id ? (
-                      <span className="stripe-transfer-id" title={payout.stripe_transfer_id}>
+                    {payout.payoneer_transfer_id ? (
+                      <span className="payoneer-transfer-id" title={payout.payoneer_transfer_id}>
                         <CreditCard size={14} />
-                        {payout.stripe_transfer_id.substring(0, 12)}...
+                        {payout.payoneer_transfer_id.substring(0, 12)}...
                       </span>
                     ) : (
                       <span className="no-transfer">Awaiting transfer</span>
                     )}
                   </td>
+
+
                   <td>{getStatusBadge(payout.status)}</td>
                   <td className="date-cell">{formatDate(payout.created_at)}</td>
                   <td className="actions-cell">
@@ -363,14 +366,14 @@ const AdminPayouts = () => {
 
               {/* Stripe Connect Transfer Details */}
               <div className="detail-section">
-                <h3><CreditCard size={18} /> Stripe Connect Transfer</h3>
+                <h3><CreditCard size={18} /> Payoneer Transfer Details</h3>
                 <div className="stripe-transfer-details">
                   <div className="detail-grid">
                     <div className="detail-item full-width">
-                      <label>Transfer ID</label>
-                      {selectedPayout.stripe_transfer_id ? (
-                        <span className="copyable" onClick={() => copyToClipboard(selectedPayout.stripe_transfer_id)}>
-                          {selectedPayout.stripe_transfer_id}
+                      <label>Payoneer Transfer ID</label>
+                      {selectedPayout.payoneer_transfer_id ? (
+                        <span className="copyable" onClick={() => copyToClipboard(selectedPayout.payoneer_transfer_id)}>
+                          {selectedPayout.payoneer_transfer_id}
                           <Copy size={14} />
                         </span>
                       ) : (
@@ -379,7 +382,7 @@ const AdminPayouts = () => {
                     </div>
                     <div className="detail-item">
                       <label>Transfer Status</label>
-                      <span>{selectedPayout.stripe_transfer_status || selectedPayout.status}</span>
+                      <span>{selectedPayout.payoneer_transfer_status || selectedPayout.status}</span>
                     </div>
                     {selectedPayout.developer?.stripe_account_id && (
                       <div className="detail-item">

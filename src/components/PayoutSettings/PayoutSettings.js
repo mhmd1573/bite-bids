@@ -1,3 +1,4 @@
+// app/src/components/PayoutSettings/PayoutSettings.js
 import React, { useState, useEffect } from 'react';
 import {
   Wallet, CreditCard, ExternalLink,
@@ -12,45 +13,44 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
 const PayoutSettings = () => {
   const { showNotification } = useNotification();
 
-  // Stripe Connect status
-  const [stripeStatus, setStripeStatus] = useState({
-    stripe_account_id: null,
-    stripe_account_status: null,
-    stripe_payouts_enabled: false,
-    stripe_onboarding_completed: false,
+  // Payoneer status
+  const [payoneerStatus, setPayoneerStatus] = useState({
+    payoneer_payee_id: null,
+    payoneer_payee_status: null,
+    payoneer_onboarding_completed: false,
+    payoneer_verified: false,
+    payoneer_currency: 'USD',
     total_earnings: 0
   });
 
-  // Payout history state
   const [payouts, setPayouts] = useState([]);
   const [pendingTotal, setPendingTotal] = useState(0);
-
-  // UI state
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(false);
   const [activeSection, setActiveSection] = useState('connect');
 
-  // Check for Stripe redirect params
+  // Check for Payoneer redirect params
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('stripe_success') === 'true') {
-      showNotification('success', 'Stripe Connected', 'Your Stripe account has been set up successfully!');
-      // Clean URL
+    if (urlParams.get('payoneer_success') === 'true') {
+      showNotification('success', 'Payoneer Connected', 'Your Payoneer account has been set up successfully!');
       window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (urlParams.get('stripe_refresh') === 'true') {
-      showNotification('info', 'Setup Incomplete', 'Please complete your Stripe account setup.');
+      fetchPayoneerStatus();
+    } else if (urlParams.get('payoneer_refresh') === 'true') {
+      showNotification('info', 'Setup Incomplete', 'Please complete your Payoneer account setup.');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
   useEffect(() => {
-    fetchStripeStatus();
+    fetchPayoneerStatus();
     fetchPayoutHistory();
   }, []);
 
-  const fetchStripeStatus = async () => {
+  const fetchPayoneerStatus = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stripe-connect/account-status`, {
+      const response = await fetch(`${BACKEND_URL}/api/payoneer/account-status`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -58,10 +58,10 @@ const PayoutSettings = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setStripeStatus(data);
+        setPayoneerStatus(data);
       }
     } catch (error) {
-      console.error('Error fetching Stripe status:', error);
+      console.error('Error fetching Payoneer status:', error);
     } finally {
       setLoading(false);
     }
@@ -85,10 +85,10 @@ const PayoutSettings = () => {
     }
   };
 
-  const handleConnectStripe = async () => {
+  const handleConnectPayoneer = async () => {
     setConnecting(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stripe-connect/create-account`, {
+      const response = await fetch(`${BACKEND_URL}/api/payoneer/create-payee`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -99,22 +99,26 @@ const PayoutSettings = () => {
         const data = await response.json();
         if (data.onboarding_url) {
           window.location.href = data.onboarding_url;
+        } else {
+          showNotification('info', 'Already Connected', data.message || 'Payoneer account already set up');
+          fetchPayoneerStatus();
         }
       } else {
         const error = await response.json();
-        showNotification('error', 'Error', error.detail || 'Failed to start Stripe Connect setup');
+        showNotification('error', 'Error', error.detail || 'Failed to start Payoneer setup');
       }
     } catch (error) {
-      console.error('Error connecting Stripe:', error);
-      showNotification('error', 'Error', 'Failed to connect with Stripe');
+      console.error('Error connecting Payoneer:', error);
+      showNotification('error', 'Error', 'Failed to connect with Payoneer');
     } finally {
       setConnecting(false);
     }
   };
 
-  const handleOpenStripeDashboard = async () => {
+  const checkOnboardingStatus = async () => {
+    setCheckingStatus(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stripe-connect/dashboard-link`, {
+      const response = await fetch(`${BACKEND_URL}/api/payoneer/check-onboarding-status`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -122,15 +126,17 @@ const PayoutSettings = () => {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.dashboard_url) {
-          window.open(data.dashboard_url, '_blank');
+        if (data.onboarding_completed) {
+          showNotification('success', 'Onboarding Complete', 'Your Payoneer account is now verified!');
+          fetchPayoneerStatus();
+        } else {
+          showNotification('info', 'Onboarding Pending', 'Please complete your Payoneer account setup.');
         }
-      } else {
-        showNotification('error', 'Error', 'Failed to open Stripe dashboard');
       }
     } catch (error) {
-      console.error('Error opening dashboard:', error);
-      showNotification('error', 'Error', 'Failed to open Stripe dashboard');
+      console.error('Error checking status:', error);
+    } finally {
+      setCheckingStatus(false);
     }
   };
 
@@ -175,14 +181,14 @@ const PayoutSettings = () => {
           <Wallet className="header-icon" size={28} />
           <div>
             <h2>Payout Settings</h2>
-            <p>Receive automatic payments via Stripe when projects are completed</p>
+            <p>Receive automatic payments via Payoneer when projects are completed</p>
           </div>
         </div>
 
         <div className="earnings-summary">
           <div className="earnings-card">
             <span className="label">Total Earnings</span>
-            <span className="value">${stripeStatus.total_earnings?.toFixed(2) || '0.00'}</span>
+            <span className="value">${payoneerStatus.total_earnings?.toFixed(2) || '0.00'}</span>
           </div>
           <div className="earnings-card pending">
             <span className="label">Pending Payout</span>
@@ -198,7 +204,7 @@ const PayoutSettings = () => {
           onClick={() => setActiveSection('connect')}
         >
           <CreditCard size={18} />
-          Stripe Connect
+          Payoneer Connect
         </button>
         <button
           className={`section-tab ${activeSection === 'history' ? 'active' : ''}`}
@@ -210,115 +216,127 @@ const PayoutSettings = () => {
         </button>
       </div>
 
-      {/* Stripe Connect Section */}
+      {/* Payoneer Connect Section */}
       {activeSection === 'connect' && (
         <div className="preferences-section">
-          {/* Connected Status */}
-          {stripeStatus.stripe_payouts_enabled ? (
-            <div className="stripe-connected">
+          {payoneerStatus.payoneer_onboarding_completed ? (
+            /* ✅ Connected and onboarded */
+            <div className="payoneer-connected">
               <div className="connected-banner verified">
                 <CheckCircle size={24} />
                 <div>
-                  <h3>Stripe Connected</h3>
+                  <h3>Payoneer Connected</h3>
                   <p>Your account is set up to receive automatic payouts</p>
                 </div>
               </div>
 
-              <div className="stripe-info-card">
+              <div className="payoneer-info-card">
                 <div className="info-row">
                   <span className="label">Account Status</span>
-                  <span className="value status-enabled">
-                    <CheckCircle size={16} /> Enabled
-                  </span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Payouts</span>
                   <span className="value status-enabled">
                     <CheckCircle size={16} /> Active
                   </span>
                 </div>
                 <div className="info-row">
-                  <span className="label">Account ID</span>
-                  <span className="value account-id">{stripeStatus.stripe_account_id}</span>
+                  <span className="label">Verification</span>
+                  <span className="value status-enabled">
+                    <CheckCircle size={16} /> Verified
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Currency</span>
+                  <span className="value">{payoneerStatus.payoneer_currency || 'USD'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Payee ID</span>
+                  <span className="value account-id">{payoneerStatus.payoneer_payee_id}</span>
                 </div>
               </div>
 
-              <div className="stripe-actions">
-                <button className="btn btn-secondary" onClick={handleOpenStripeDashboard}>
-                  <ExternalLink size={18} />
-                  Open Stripe Dashboard
-                </button>
-                <button className="btn btn-outline" onClick={fetchStripeStatus}>
+              <div className="payoneer-actions">
+                <button className="btn btn-outline" onClick={fetchPayoneerStatus}>
                   <RefreshCw size={18} />
                   Refresh Status
                 </button>
               </div>
 
-              <div className="stripe-note">
+              <div className="payoneer-note">
                 <AlertCircle size={16} />
                 <p>
                   When an investor confirms project completion, your payment will be automatically
-                  transferred to your connected Stripe account. Funds typically arrive in 1-2 business days.
+                  transferred to your connected Payoneer account. Funds typically arrive within 1-2 business days.
                 </p>
               </div>
             </div>
-          ) : stripeStatus.stripe_account_id ? (
-            /* Account created but not fully set up */
-            <div className="stripe-pending">
+          ) : payoneerStatus.payoneer_payee_id ? (
+            /* ✅ Account created but not fully set up */
+            <div className="payoneer-pending">
               <div className="connected-banner unverified">
                 <AlertCircle size={24} />
                 <div>
                   <h3>Complete Your Setup</h3>
-                  <p>Your Stripe account needs additional information to receive payouts</p>
+                  <p>Your Payoneer account needs additional KYC verification to receive payouts</p>
                 </div>
               </div>
 
-              <div className="stripe-info-card">
+              <div className="payoneer-info-card">
                 <div className="info-row">
                   <span className="label">Account Status</span>
                   <span className="value status-pending">
-                    <Clock size={16} /> Pending Setup
+                    <Clock size={16} /> Pending KYC
                   </span>
                 </div>
                 <div className="info-row">
-                  <span className="label">Payouts</span>
+                  <span className="label">Verification</span>
                   <span className="value status-disabled">
-                    <XCircle size={16} /> Not Enabled
+                    <XCircle size={16} /> Not Verified
                   </span>
                 </div>
               </div>
 
-              <div className="stripe-actions">
+              <div className="payoneer-actions">
                 <button
                   className="btn btn-primary"
-                  onClick={handleConnectStripe}
+                  onClick={handleConnectPayoneer}
                   disabled={connecting}
                 >
                   {connecting ? (
                     <>
                       <Loader size={18} className="spin" />
-                      Opening Stripe...
+                      Opening Payoneer...
                     </>
                   ) : (
                     <>
                       <ExternalLink size={18} />
-                      Complete Setup
+                      Complete KYC
                     </>
                   )}
+                </button>
+                <button
+                  className="btn btn-outline"
+                  onClick={checkOnboardingStatus}
+                  disabled={checkingStatus}
+                >
+                  {checkingStatus ? (
+                    <Loader size={18} className="spin" />
+                  ) : (
+                    <RefreshCw size={18} />
+                  )}
+                  Check Status
                 </button>
               </div>
             </div>
           ) : (
-            /* No account - show connect button */
-            <div className="stripe-not-connected">
+            /* ✅ No account - show connect button */
+            <div className="payoneer-not-connected">
               <div className="connect-prompt">
-                <div className="stripe-logo">
+                <div className="payoneer-logo">
                   <CreditCard size={48} />
                 </div>
-                <h3>Connect with Stripe</h3>
+                <h3>Connect with Payoneer</h3>
                 <p>
                   To receive payments for completed projects, you need to connect your
-                  Stripe account. This is a one-time setup that takes about 2-3 minutes.
+                  Payoneer account. This is a one-time setup that takes about 2-3 minutes.
                 </p>
 
                 <ul className="benefits-list">
@@ -326,11 +344,12 @@ const PayoutSettings = () => {
                   <li><Check size={16} /> Funds deposited directly to your bank account</li>
                   <li><Check size={16} /> Track all your earnings in one place</li>
                   <li><Check size={16} /> Secure and trusted by millions worldwide</li>
+                  <li><Check size={16} /> Support for 150+ currencies</li>
                 </ul>
 
                 <button
                   className="btn btn-primary btn-connect"
-                  onClick={handleConnectStripe}
+                  onClick={handleConnectPayoneer}
                   disabled={connecting}
                 >
                   {connecting ? (
@@ -341,13 +360,13 @@ const PayoutSettings = () => {
                   ) : (
                     <>
                       <CreditCard size={20} />
-                      Connect with Stripe
+                      Connect with Payoneer
                     </>
                   )}
                 </button>
 
-                <p className="stripe-note-small">
-                  You'll be redirected to Stripe to complete the setup securely.
+                <p className="payoneer-note-small">
+                  You'll be redirected to Payoneer to complete the setup securely.
                 </p>
               </div>
             </div>
@@ -373,7 +392,7 @@ const PayoutSettings = () => {
                     <th>Description</th>
                     <th>Amount</th>
                     <th>Status</th>
-                    <th>Transfer ID</th>
+                    <th>Payoneer ID</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -387,7 +406,7 @@ const PayoutSettings = () => {
                       </td>
                       <td>{getStatusBadge(payout.status)}</td>
                       <td className="transaction-id">
-                        {payout.stripe_transfer_id || payout.transaction_id || '-'}
+                        {payout.payoneer_transfer_id || payout.transaction_id || '-'}
                       </td>
                     </tr>
                   ))}
