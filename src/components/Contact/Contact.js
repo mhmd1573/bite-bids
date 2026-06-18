@@ -1,3 +1,4 @@
+// components/Contact/Contact.js
 import React, { useState } from "react";
 import {
   Mail,
@@ -8,6 +9,7 @@ import {
   MessageSquare,
   CheckCircle,
   Globe,
+  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -33,17 +35,60 @@ const Contact = () => {
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState(null);
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-  const handleInputChange = (field, value) =>
+  const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error for this field when user types
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
+    if (serverError) {
+      setServerError(null);
+    }
+  };
+
+  // ✅ Frontend validation helper
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'name':
+        return value.length < 2 ? 'Name must be at least 2 characters' : null;
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return !emailRegex.test(value) ? 'Please enter a valid email address' : null;
+      case 'subject':
+        return value.length < 3 ? 'Subject must be at least 3 characters' : null;
+      case 'category':
+        const validCategories = ['general', 'technical', 'billing', 'partnership', 'feedback'];
+        return !validCategories.includes(value) ? 'Please select a valid category' : null;
+      case 'message':
+        return value.length < 10 ? 'Message must be at least 10 characters' : null;
+      default:
+        return null;
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setErrors({});
+    setServerError(null);
+
+    // ✅ Frontend validation
+    const newErrors = {};
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch(`${BACKEND_URL}/api/contact/submit`, {
@@ -67,11 +112,31 @@ const Contact = () => {
         });
         setTimeout(() => setSubmitted(false), 5000);
       } else {
-        setError(data.detail || 'Failed to send message. Please try again.');
+        // ✅ Handle validation errors from backend
+        if (response.status === 422 && data.detail && Array.isArray(data.detail)) {
+          const fieldErrors = {};
+          data.detail.forEach(err => {
+            const field = err.loc?.[err.loc.length - 1] || 'unknown';
+            let message = err.msg || 'Invalid value';
+            
+            // Clean up the message
+            if (message.includes('String should have at least')) {
+              const match = message.match(/at least (\d+)/);
+              if (match) {
+                message = `${field} must be at least ${match[1]} characters`;
+              }
+            }
+            fieldErrors[field] = message;
+          });
+          setErrors(fieldErrors);
+          setServerError('Please fix the errors below and try again.');
+        } else {
+          setServerError(data.detail || 'Failed to send message. Please try again.');
+        }
       }
     } catch (err) {
       console.error('Error submitting contact form:', err);
-      setError('Network error. Please check your connection and try again.');
+      setServerError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -82,7 +147,7 @@ const Contact = () => {
       icon: <Mail className="w-6 h-6 text-brand" />,
       title: "Email Us",
       details: "bitebids@gmail.com",
-      subtext: "We’ll reply within 24 hours",
+      subtext: "We'll reply within 24 hours",
     },
     {
       icon: <Phone className="w-6 h-6 text-brand" />,
@@ -127,9 +192,21 @@ const Contact = () => {
     },
   ];
 
+  // ✅ Helper to render error message for a field
+  const renderFieldError = (field) => {
+    if (errors[field]) {
+      return (
+        <p className="text-red-400 text-sm mt-1 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" />
+          {errors[field]}
+        </p>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="contact-page">
-
 
       {/* ===== Hero Section ===== */}
       <section className="contact-hero cosmic-hero">
@@ -142,10 +219,10 @@ const Contact = () => {
             </div>
           </div>
           <h1 className="hero-title">
-            Let’s Build Something Amazing
+            Let's Build Something Amazing
           </h1>
           <p className="hero-subtitle">
-            We’d love to collaborate, assist, or hear your feedback — reach out and our team will connect with you shortly.
+            We'd love to collaborate, assist, or hear your feedback — reach out and our team will connect with you shortly.
           </p>
         </div>
       </section>
@@ -216,11 +293,17 @@ const Contact = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {error && (
+            {/* ✅ Server Error Display */}
+            {serverError && (
               <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-6">
-                <p className="text-red-400 text-sm">{error}</p>
+                <p className="text-red-400 text-sm flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  {serverError}
+                </p>
               </div>
             )}
+
+            {/* ✅ Success Message */}
             {submitted ? (
               <div className="bg-green-500/20 border border-green-500 rounded-lg p-6 text-center">
                 <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
@@ -236,45 +319,45 @@ const Contact = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="name" className="text-white">
-                      Your Name
+                      Your Name *
                     </Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
-                      className="cosmic-input text-white"
+                      className={`cosmic-input text-white ${errors.name ? 'border-red-500' : ''}`}
                       placeholder="John Doe"
-                      required
                     />
+                    {renderFieldError('name')}
                   </div>
                   <div>
                     <Label htmlFor="email" className="text-white">
-                      Email Address
+                      Email Address *
                     </Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
-                      className="cosmic-input text-white"
+                      className={`cosmic-input text-white ${errors.email ? 'border-red-500' : ''}`}
                       placeholder="john@example.com"
-                      required
                     />
+                    {renderFieldError('email')}
                   </div>
                 </div>
 
                 <div>
                   <Label htmlFor="category" className="text-white">
-                    Category
+                    Category *
                   </Label>
                   <Select
                     value={formData.category}
                     onValueChange={(v) => handleInputChange("category", v)}
                   >
-                    <SelectTrigger className="cosmic-input text-white">
+                    <SelectTrigger className={`cosmic-input text-white ${errors.category ? 'border-red-500' : ''}`}>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
-                      <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                    <SelectContent className="bg-white text-gray-900 border border-gray-200">
                       <SelectItem value="general">General Inquiry</SelectItem>
                       <SelectItem value="technical">Technical Support</SelectItem>
                       <SelectItem value="billing">Billing & Payments</SelectItem>
@@ -282,35 +365,39 @@ const Contact = () => {
                       <SelectItem value="feedback">Feedback</SelectItem>
                     </SelectContent>
                   </Select>
+                  {renderFieldError('category')}
                 </div>
 
                 <div>
                   <Label htmlFor="subject" className="text-white">
-                    Subject
+                    Subject *
                   </Label>
                   <Input
                     id="subject"
                     value={formData.subject}
                     onChange={(e) => handleInputChange("subject", e.target.value)}
-                    className="cosmic-input text-white"
+                    className={`cosmic-input text-white ${errors.subject ? 'border-red-500' : ''}`}
                     placeholder="How can we help?"
-                    required
                   />
+                  {renderFieldError('subject')}
                 </div>
 
                 <div>
                   <Label htmlFor="message" className="text-white">
-                    Message
+                    Message *
                   </Label>
                   <Textarea
                     id="message"
                     rows={6}
                     value={formData.message}
                     onChange={(e) => handleInputChange("message", e.target.value)}
-                    className="cosmic-input text-white"
+                    className={`cosmic-input text-white ${errors.message ? 'border-red-500' : ''}`}
                     placeholder="Tell us more..."
-                    required
                   />
+                  {renderFieldError('message')}
+                  <p className="text-xs text-gray-400 mt-1">
+                    Minimum 10 characters
+                  </p>
                 </div>
 
                 <Button type="submit" className="w-full cosmic-button" disabled={loading}>
