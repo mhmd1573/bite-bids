@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mobile Responsiveness Test - BiteBids</title>
+    <style>
+        /* MOBILE-FIRST DESIGN TEST */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1e293b 100%);
+            color: white;
+            overflow-x: hidden;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100vw;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+        
+        .test-section {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .device-sizes {
+            display: grid;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .device-test {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+        
+        .responsive-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .card-demo {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .mobile-nav-demo {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            z-index: 9999;
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9998;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .mobile-menu-overlay.show {
+            display: flex;
+        }
+        
+        .mobile-menu-item {
+            padding: 1rem 2rem;
+            background: rgba(59, 130, 246, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            min-width: 200px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-menu-item:hover {
+            background: rgba(59, 130, 246, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .touch-test {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .touch-test:active {
+            transform: scale(0.98);
+            background: rgba(34, 197, 94, 0.4);
+        }
+        
+        .viewport-info {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-family: monospace;
+            z-index: 1000;
+        }
+        
+        /* TABLET BREAKPOINT */
+        @media (min-width: 768px) {
+            body { font-size: 16px; }
+            .container { padding: 2rem; }
+            .test-section { padding: 2rem; }
+            .responsive-grid { grid-template-columns: repeat(2, 1fr); }
+            .mobile-nav-demo { display: none; }
+        }
+        
+        /* DESKTOP BREAKPOINT */
+        @media (min-width: 1024px) {
+            .responsive-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        
+        /* LARGE DESKTOP */
+        @media (min-width: 1280px) {
+            .responsive-grid { grid-template-columns: repeat(4, 1fr); }
+            .container { max-width: 1200px; margin: 0 auto; }
+        }
+        
+        /* LANDSCAPE MOBILE */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .container { padding: 0.5rem; }
+            .test-section { padding: 1rem; }
+            .mobile-menu-item { padding: 0.75rem 1.5rem; font-size: 1rem; }
+        }
+        
+        /* HIGH DPI */
+        @media (-webkit-min-device-pixel-ratio: 2) {
+            body { -webkit-font-smoothing: antialiased; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Navigation Demo -->
+    <button class="mobile-nav-demo" onclick="toggleMobileMenu()">
+        <span id="menuIcon">☰</span>
+    </button>
+    
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenu">
+        <a href="#" class="mobile-menu-item">🏠 Home</a>
+        <a href="#" class="mobile-menu-item">🛒 Marketplace</a>
+        <a href="#" class="mobile-menu-item">🔨 Auctions</a>
+        <a href="#" class="mobile-menu-item">📊 Dashboard</a>
+        <div style="margin-top: 2rem;">
+            <button onclick="toggleMobileMenu()" style="background: rgba(239, 68, 68, 0.3); color: #ef4444; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer;">
+                ✕ Close Menu
+            </button>
+        </div>
+    </div>
+    
+    <!-- Viewport Info -->
+    <div class="viewport-info" id="viewportInfo">
+        Loading...
+    </div>
+    
+    <div class="container">
+        <h1 style="text-align: center; color: #3b82f6; margin-bottom: 2rem;">
+            📱 Mobile Responsiveness Test
+        </h1>
+        
+        <div class="test-section">
+            <h2 style="color: #14b8a6; margin-bottom: 1rem;">✅ Mobile-First Implementation</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">
+                This test demonstrates the comprehensive mobile-first responsive design implemented for BiteBids:
+            </p>
+            <ul style="color: #94a3b8; padding-left: 1.5rem; line-height: 1.6;">
+                <li>Mobile-first CSS approach (320px base)</li>
+                <li>Flexible grids with breakpoints (768px, 1024px, 1280px)</li>
+                <li>Touch-friendly 44px minimum touch targets</li>
+                <li>Hamburger navigation for mobile</li>
+                <li>Responsive typography scaling</li>
+                <li>Viewport-compliant layouts</li>
+                <li>Orientation support (portrait/landscape)</li>
+                <li>High DPI display optimization</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2 style="color: #14b8a6; margin-bottom: 1rem;">📱 Device Size Testing</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">
+                The layout automatically adapts to different screen sizes:
+            </p>
+            
+            <div class="device-sizes">
+                <div class="device-test">
+                    <h3 style="color: #22c55e; margin-bottom: 0.5rem;">📱 Mobile (320px - 767px)</h3>
+                    <ul style="color: #94a3b8; font-size: 0.9rem; padding-left: 1rem;">
+                        <li>Single column layout</li>
+                        <li>Hamburger navigation</li>
+                        <li>14px base font size</li>
+                        <li>Full-width cards</li>
+                        <li>Touch-optimized spacing</li>
+                    </ul>
+                </div>
+                
+                <div class="device-test">
+                    <h3 style="color: #3b82f6; margin-bottom: 0.5rem;">📟 Tablet (768px - 1023px)</h3>
+                    <ul style="color: #94a3b8; font-size: 0.9rem; padding-left: 1rem;">
+                        <li>2-column grid layout</li>
+                        <li>Desktop navigation</li>
+                        <li>16px base font size</li>
+                        <li>Increased padding</li>
+                        <li>Side-by-side tabs</li>
+                    </ul>
+                </div>
+                
+                <div class="device-test">
+                    <h3 style="color: #8b5cf6; margin-bottom: 0.5rem;">💻 Desktop (1024px+)</h3>
+                    <ul style="color: #94a3b8; font-size: 0.9rem; padding-left: 1rem;">
+                        <li>3-4 column grid layout</li>
+                        <li>Full navigation bar</li>
+                        <li>Larger typography</li>
+                        <li>Maximum content width</li>
+                        <li>Hover interactions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 style="color: #14b8a6; margin-bottom: 1rem;">🎯 Responsive Grid Demo</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">
+                Cards automatically adapt from 1 column (mobile) to 2 (tablet) to 3-4 (desktop):
+            </p>
+            
+            <div class="responsive-grid">
+                <div class="card-demo">
+                    <div>
+                        <h4 style="color: #3b82f6; margin-bottom: 0.5rem;">Card 1</h4>
+                        <p style="font-size: 0.9rem;">Responsive layout</p>
+                    </div>
+                </div>
+                <div class="card-demo">
+                    <div>
+                        <h4 style="color: #14b8a6; margin-bottom: 0.5rem;">Card 2</h4>
+                        <p style="font-size: 0.9rem;">Flexible grid</p>
+                    </div>
+                </div>
+                <div class="card-demo">
+                    <div>
+                        <h4 style="color: #8b5cf6; margin-bottom: 0.5rem;">Card 3</h4>
+                        <p style="font-size: 0.9rem;">Mobile-first</p>
+                    </div>
+                </div>
+                <div class="card-demo">
+                    <div>
+                        <h4 style="color: #f59e0b; margin-bottom: 0.5rem;">Card 4</h4>
+                        <p style="font-size: 0.9rem;">Touch-friendly</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 style="color: #14b8a6; margin-bottom: 1rem;">👆 Touch Interaction Test</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem;">
+                All interactive elements are touch-optimized with 44px minimum size:
+            </p>
+            
+            <div class="touch-test" onclick="touchTest(this)">
+                <span>Tap me! (Touch-optimized button)</span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 style="color: #14b8a6; margin-bottom: 1rem;">📊 Current Viewport Status</h2>
+            <div id="statusInfo" style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.9rem;">
+                <div>Loading device information...</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 style="color: #22c55e; margin-bottom: 1rem;">✅ Implementation Summary</h2>
+            <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 0.75rem; padding: 1.5rem;">
+                <h3 style="color: #22c55e; margin-bottom: 1rem;">Mobile Responsiveness Features:</h3>
+                <div style="display: grid; gap: 0.75rem; color: #94a3b8; font-size: 0.9rem;">
+                    <div>🎯 <strong>Mobile-First Design:</strong> Base styles for 320px+ screens</div>
+                    <div>📱 <strong>Responsive Breakpoints:</strong> 768px (tablet), 1024px (desktop), 1280px (large)</div>
+                    <div>🍔 <strong>Hamburger Navigation:</strong> Collapsible menu for mobile devices</div>
+                    <div>👆 <strong>Touch-Friendly:</strong> 44px minimum touch targets</div>
+                    <div>🚫 <strong>No Horizontal Scroll:</strong> Viewport-compliant layouts</div>
+                    <div>🔄 <strong>Orientation Support:</strong> Portrait and landscape modes</div>
+                    <div>⚡ <strong>Performance Optimized:</strong> Mobile-first loading</div>
+                    <div>♿ <strong>Accessibility:</strong> Screen reader and touch support</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let mobileMenuOpen = false;
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+            
+            mobileMenuOpen = !mobileMenuOpen;
+            
+            if (mobileMenuOpen) {
+                menu.classList.add('show');
+                icon.textContent = '✕';
+            } else {
+                menu.classList.remove('show');
+                icon.textContent = '☰';
+            }
+        }
+        
+        function touchTest(element) {
+            element.style.background = 'rgba(34, 197, 94, 0.5)';
+            element.innerHTML = '<span>✅ Touch detected! Great responsiveness!</span>';
+            
+            setTimeout(() => {
+                element.style.background = 'rgba(34, 197, 94, 0.2)';
+                element.innerHTML = '<span>Tap me! (Touch-optimized button)</span>';
+            }, 2000);
+        }
+        
+        function updateViewportInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            const orientation = width > height ? 'Landscape' : 'Portrait';
+            
+            let deviceType = 'Mobile';
+            if (width >= 1280) deviceType = 'Large Desktop';
+            else if (width >= 1024) deviceType = 'Desktop';
+            else if (width >= 768) deviceType = 'Tablet';
+            
+            const viewportInfo = document.getElementById('viewportInfo');
+            const statusInfo = document.getElementById('statusInfo');
+            
+            const info = `
+                <div><strong>Device:</strong> ${deviceType}</div>
+                <div><strong>Viewport:</strong> ${width} × ${height}px</div>
+                <div><strong>Orientation:</strong> ${orientation}</div>
+                <div><strong>Device Pixel Ratio:</strong> ${dpr}</div>
+                <div><strong>Touch Support:</strong> ${'ontouchstart' in window ? 'Yes' : 'No'}</div>
+                <div><strong>User Agent:</strong> ${navigator.userAgent.split(' ').slice(-2).join(' ')}</div>
+            `;
+            
+            viewportInfo.innerHTML = `${width}×${height} | ${deviceType}`;
+            statusInfo.innerHTML = info;
+        }
+        
+        // Update viewport info on load and resize
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateViewportInfo, 100);
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('mobileMenu');
+            const toggle = document.querySelector('.mobile-nav-demo');
+            
+            if (mobileMenuOpen && !menu.contains(e.target) && !toggle.contains(e.target)) {
+                toggleMobileMenu();
+            }
+        });
+        
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteBids OAuth Configuration Diagnostic</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #0a0e27 0%, #1e293b 100%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .success {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .warning {
+            border-color: rgba(251, 191, 36, 0.5);
+            background: rgba(251, 191, 36, 0.1);
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        
+        .step {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #14b8a6 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .diagnostic-result {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        li {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #3b82f6; text-align: center; margin-bottom: 2rem;">
+            🔧 BiteBids OAuth Configuration Diagnostic
+        </h1>
+        
+        <div class="status-card error">
+            <h2 style="color: #ef4444; margin-top: 0;">❌ Current Issue: Error 400 - redirect_uri_mismatch</h2>
+            <p>Your Google OAuth configuration has a redirect URI mismatch. This happens when the redirect URI in your Google Cloud Console doesn't match what your application is sending.</p>
+        </div>
+        
+        <div class="status-card">
+            <h2 style="color: #14b8a6; margin-top: 0;">🔍 Current Backend Configuration</h2>
+            <div class="code-block">
+BASE_URL: https://bitebids-touch.preview.emergentagent.com
+Google Client ID: 521983354619-dbi0ku9qu1e8b0hu086bb0i83i1cmhf3.apps.googleusercontent.com
+Expected Redirect URI: https://bitebids-touch.preview.emergentagent.com/api/auth/callback/google
+            </div>
+        </div>
+        
+        <div class="status-card warning">
+            <h2 style="color: #f59e0b; margin-top: 0;">⚠️ What You Need to Fix</h2>
+            <p>You need to configure your Google Cloud Console to match your backend settings and add your email to test users.</p>
+        </div>
+        
+        <h2 style="color: #3b82f6;">📋 Step-by-Step Fix Instructions</h2>
+        
+        <div class="step">
+            <h3>Step 1: Open Google Cloud Console</h3>
+            <p>Go to your Google Cloud Console and navigate to the correct project:</p>
+            <a href="https://console.cloud.google.com/apis/credentials" class="btn" target="_blank">
+                Open Google Cloud Console
+            </a>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Edit OAuth 2.0 Client ID</h3>
+            <p>Find your OAuth client (ending in ...cmhf3.apps.googleusercontent.com) and click Edit</p>
+            <p><strong>In "Authorized redirect URIs", add this EXACT URL:</strong></p>
+            <div class="code-block">
+https://bitebids-touch.preview.emergentagent.com/api/auth/callback/google
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Configure OAuth Consent Screen</h3>
+            <p>Go to OAuth consent screen settings:</p>
+            <ul>
+                <li><strong>Application Type:</strong> External</li>
+                <li><strong>Authorized Domains:</strong> Add "emergentagent.com"</li>
+                <li><strong>Test Users:</strong> Add "rayansinear@gmail.com"</li>
+            </ul>
+            <a href="https://console.cloud.google.com/apis/credentials/consent" class="btn" target="_blank">
+                Configure Consent Screen
+            </a>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Test the Configuration</h3>
+            <p>After making the changes above, test the OAuth flow:</p>
+            <button class="btn" onclick="testOAuthConfig()">Test OAuth Configuration</button>
+            <button class="btn" onclick="checkBackendStatus()">Check Backend Status</button>
+        </div>
+        
+        <div id="diagnostic-results" class="diagnostic-result" style="display: none;"></div>
+        
+        <div class="status-card">
+            <h2 style="color: #14b8a6; margin-top: 0;">✅ Expected Results After Fix</h2>
+            <ul>
+                <li>Google OAuth login should work without errors</li>
+                <li>Users should be redirected properly after authentication</li>
+                <li>No more "redirect_uri_mismatch" errors</li>
+                <li>Access should be granted for test users</li>
+            </ul>
+        </div>
+        
+        <div class="status-card warning">
+            <h2 style="color: #f59e0b; margin-top: 0;">🔄 Alternative: Use Different Redirect URI</h2>
+            <p>If you prefer to use a different redirect URI, you can update the backend configuration instead. Contact the developer to change the BASE_URL in the backend settings.</p>
+        </div>
+    </div>
+    
+    <script>
+        async function testOAuthConfig() {
+            const resultsDiv = document.getElementById('diagnostic-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<h3>🔍 Testing OAuth Configuration...</h3>';
+            resultsDiv.className = 'diagnostic-result warning';
+            
+            try {
+                // Test OAuth config endpoint
+                const response = await fetch('/api/oauth/config');
+                const config = await response.json();
+                
+                let results = '<h3>🔍 OAuth Configuration Test Results:</h3>';
+                results += '<div class="code-block">';
+                results += JSON.stringify(config, null, 2);
+                results += '</div>';
+                
+                if (config.google && config.google.configured) {
+                    results += '<p style="color: #22c55e;">✅ Google OAuth is configured</p>';
+                    results += '<p>Redirect URI: ' + config.google.redirect_url + '</p>';
+                    resultsDiv.className = 'diagnostic-result success';
+                } else {
+                    results += '<p style="color: #ef4444;">❌ Google OAuth is not properly configured</p>';
+                    resultsDiv.className = 'diagnostic-result error';
+                }
+                
+                resultsDiv.innerHTML = results;
+            } catch (error) {
+                resultsDiv.innerHTML = '<h3>❌ Error testing OAuth configuration:</h3><p style="color: #ef4444;">' + error.message + '</p>';
+                resultsDiv.className = 'diagnostic-result error';
+            }
+        }
+        
+        async function checkBackendStatus() {
+            const resultsDiv = document.getElementById('diagnostic-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<h3>🔍 Checking Backend Status...</h3>';
+            resultsDiv.className = 'diagnostic-result warning';
+            
+            try {
+                const response = await fetch('/api/health');
+                const health = await response.json();
+                
+                let results = '<h3>🔍 Backend Health Check Results:</h3>';
+                results += '<div class="code-block">';
+                results += JSON.stringify(health, null, 2);
+                results += '</div>';
+                
+                if (health.status === 'healthy') {
+                    results += '<p style="color: #22c55e;">✅ Backend is running correctly</p>';
+                    resultsDiv.className = 'diagnostic-result success';
+                } else {
+                    results += '<p style="color: #ef4444;">❌ Backend health check failed</p>';
+                    resultsDiv.className = 'diagnostic-result error';
+                }
+                
+                resultsDiv.innerHTML = results;
+            } catch (error) {
+                resultsDiv.innerHTML = '<h3>❌ Error checking backend status:</h3><p style="color: #ef4444;">' + error.message + '</p>';
+                resultsDiv.className = 'diagnostic-result error';
+            }
+        }
+    </script>
+</body>
+</html>

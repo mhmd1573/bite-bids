@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteBids Desktop Layout Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #14b8a6;
+            margin-bottom: 1rem;
+        }
+        
+        .header p {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* OPTIMIZED DESKTOP GRID - 3 CARDS PER ROW */
+        .marketplace-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        /* Medium screens - 2 cards per row */
+        @media (max-width: 1199px) {
+            .marketplace-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Small screens - 1 card per row */
+        @media (max-width: 768px) {
+            .marketplace-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            body {
+                padding: 1rem;
+            }
+        }
+        
+        /* ENHANCED CARD DESIGN */
+        .project-card {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #14b8a6, #0d9488);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(20, 184, 166, 0.2);
+            border-color: rgba(20, 184, 166, 0.5);
+        }
+        
+        .project-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #14b8a6;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        
+        .project-description {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .tech-badge {
+            background: rgba(20, 184, 166, 0.2);
+            color: #14b8a6;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            font-weight: 500;
+        }
+        
+        .pricing-section {
+            background: rgba(20, 184, 166, 0.1);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            margin: 1rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .price-main {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #14b8a6;
+        }
+        
+        .price-details {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .cta-button {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+        }
+        
+        .cta-button:hover {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(20, 184, 166, 0.3);
+        }
+        
+        /* Layout comparison section */
+        .comparison {
+            margin: 4rem 0;
+            padding: 2rem;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 1rem;
+            border: 1px solid rgba(20, 184, 166, 0.2);
+        }
+        
+        .comparison h3 {
+            font-size: 1.5rem;
+            color: #14b8a6;
+            margin-bottom: 1rem;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .comparison-item {
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(20, 184, 166, 0.1);
+        }
+        
+        .comparison-item h4 {
+            color: #14b8a6;
+            margin-bottom: 0.5rem;
+        }
+        
+        .before {
+            border-left: 3px solid #ef4444;
+        }
+        
+        .after {
+            border-left: 3px solid #10b981;
+        }
+        
+        .status-icon {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BiteBids Desktop Layout Optimization</h1>
+            <p>Enhanced card sizes and improved readability for web version</p>
+        </div>
+        
+        <!-- Optimized Grid Layout Demo -->
+        <div class="marketplace-grid">
+            <div class="project-card">
+                <div>
+                    <div class="project-title">AI-Powered E-commerce Platform</div>
+                    <div class="project-description">
+                        Build a modern, scalable e-commerce platform with AI-powered product recommendations, advanced analytics dashboard, user authentication, shopping cart functionality, payment integration, and comprehensive admin panel.
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">React</span>
+                        <span class="tech-badge">Node.js</span>
+                        <span class="tech-badge">MongoDB</span>
+                        <span class="tech-badge">AI/ML</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="pricing-section">
+                        <div>
+                            <div class="price-main">$8,000.00</div>
+                            <div class="price-details">Total: $8,510.00</div>
+                        </div>
+                        <div class="price-details">+6% fee +$30</div>
+                    </div>
+                    <button class="cta-button">View Details & Buy Now</button>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <div>
+                    <div class="project-title">Mobile App Development</div>
+                    <div class="project-description">
+                        Cross-platform mobile application development using React Native with backend API integration, push notifications, real-time chat features, and app store deployment with comprehensive testing.
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">React Native</span>
+                        <span class="tech-badge">Firebase</span>
+                        <span class="tech-badge">API Integration</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="pricing-section">
+                        <div>
+                            <div class="price-main">$5,500.00</div>
+                            <div class="price-details">Total: $5,860.00</div>
+                        </div>
+                        <div class="price-details">+6% fee +$30</div>
+                    </div>
+                    <button class="cta-button">View Details & Buy Now</button>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <div>
+                    <div class="project-title">Enterprise Web Application</div>
+                    <div class="project-description">
+                        Full-stack enterprise web application with advanced user management, role-based access control, comprehensive reporting, data visualization, and integration with existing systems.
+                    </div>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Vue.js</span>
+                        <span class="tech-badge">Python</span>
+                        <span class="tech-badge">PostgreSQL</span>
+                        <span class="tech-badge">Docker</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="pricing-section">
+                        <div>
+                            <div class="price-main">$12,000.00</div>
+                            <div class="price-details">Total: $12,750.00</div>
+                        </div>
+                        <div class="price-details">+6% fee +$30</div>
+                    </div>
+                    <button class="cta-button">View Details & Buy Now</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Layout Comparison -->
+        <div class="comparison">
+            <h3>🔄 Layout Optimization Results</h3>
+            <div class="comparison-grid">
+                <div class="comparison-item before">
+                    <h4><span class="status-icon">❌</span>Before (4 Cards Per Row)</h4>
+                    <ul style="color: rgba(255, 255, 255, 0.8); padding-left: 1rem;">
+                        <li>Cards too narrow and cramped</li>
+                        <li>Text difficult to read</li>
+                        <li>Poor content visibility</li>
+                        <li>Cramped pricing sections</li>
+                        <li>Small buttons and badges</li>
+                    </ul>
+                </div>
+                <div class="comparison-item after">
+                    <h4><span class="status-icon">✅</span>After (3 Cards Per Row)</h4>
+                    <ul style="color: rgba(255, 255, 255, 0.8); padding-left: 1rem;">
+                        <li>Larger, more readable cards</li>
+                        <li>Enhanced typography and spacing</li>
+                        <li>Clear pricing visibility</li>
+                        <li>Prominent call-to-action buttons</li>
+                        <li>Professional hover animations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Responsive Breakpoints -->
+        <div class="comparison">
+            <h3>📱 Responsive Breakpoints</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div class="comparison-item">
+                    <h4><span class="status-icon">🖥️</span>Desktop (1200px+)</h4>
+                    <p style="color: rgba(255, 255, 255, 0.8);">3 cards per row for optimal readability</p>
+                </div>
+                <div class="comparison-item">
+                    <h4><span class="status-icon">💻</span>Laptop (768-1199px)</h4>
+                    <p style="color: rgba(255, 255, 255, 0.8);">2 cards per row for balanced layout</p>
+                </div>
+                <div class="comparison-item">
+                    <h4><span class="status-icon">📱</span>Mobile (< 768px)</h4>
+                    <p style="color: rgba(255, 255, 255, 0.8);">1 card per row for mobile optimization</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add dynamic resize indicator
+        function updateLayout() {
+            const width = window.innerWidth;
+            let layout = '';
+            
+            if (width >= 1200) {
+                layout = 'Desktop (3 cards)';
+            } else if (width >= 768) {
+                layout = 'Laptop (2 cards)';
+            } else {
+                layout = 'Mobile (1 card)';
+            }
+            
+            console.log(`Current layout: ${layout} at ${width}px`);
+        }
+        
+        window.addEventListener('resize', updateLayout);
+        updateLayout();
+        
+        // Add hover analytics
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                console.log('Card hover: Enhanced visibility and interaction');
+            });
+        });
+        
+        console.log('✅ BiteBids Desktop Layout Demo loaded');
+        console.log('✅ Optimized card sizes for better readability');
+        console.log('✅ Responsive design across all screen sizes');
+    </script>
+</body>
+</html>
