@@ -1612,28 +1612,60 @@ const renderFileTree = (items, parentPath = '') => {
     }
   };
 
-  const handleDownload = async (fileUrl, fileName) => {
+  const handleDownload = async (fileUrl, fileName, messageId) => {
     setDownloading(fileName);
 
     try {
-      const response = await fetch(`${BACKEND_URL}${fileUrl}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      // If it's a cloud URL (ImgBB), use the download endpoint for authorization
+      if (fileUrl && (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))) {
+        if (messageId) {
+          // Use the new download endpoint with message ID for secure access
+          const response = await fetch(`${BACKEND_URL}/api/chat/files/${messageId}/download`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+          if (response.ok) {
+            // It's a redirect - follow it
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          } else {
+            // Fallback: open the URL directly in a new tab
+            window.open(fileUrl, '_blank');
+          }
+        } else {
+          // No message ID, open directly in new tab
+          window.open(fileUrl, '_blank');
+        }
       } else {
-        showNotification('error', 'Download Failed', 'Failed to download file.');
+        // Legacy local file - fetch from backend
+        const response = await fetch(`${BACKEND_URL}${fileUrl}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          showNotification('error', 'Download Failed', 'Failed to download file.');
+        }
       }
     } catch (error) {
       console.error('Error downloading file:', error);
@@ -2133,7 +2165,7 @@ const renderFileTree = (items, parentPath = '') => {
                     </div>
                     <button
                       className="file-download-btn"
-                      onClick={() => handleDownload(message.file_url, message.file_name)}
+                      onClick={() => handleDownload(message.file_url, message.file_name, message.id)}
                       disabled={downloading === message.file_name}
                     >
                       {downloading === message.file_name ? (
