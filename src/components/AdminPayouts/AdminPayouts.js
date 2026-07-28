@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Wallet, DollarSign, Clock, CheckCircle, XCircle,
   RefreshCw, Eye, AlertTriangle, User,
-  Mail, CreditCard, Filter,
-  ChevronDown, X, Copy, ExternalLink
+  Landmark, Filter,
+  X, Copy, Check
 } from 'lucide-react';
 import './AdminPayouts.css';
 import { useNotification } from '../NotificationModal/NotificationModal';
@@ -19,7 +19,16 @@ const AdminPayouts = () => {
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState('pending');
-  const [retrying, setRetrying] = useState(false);
+  const [processing, setProcessing] = useState(false);
+
+  // Mark as paid form
+  const [showMarkPaidForm, setShowMarkPaidForm] = useState(false);
+  const [transferReference, setTransferReference] = useState('');
+  const [adminNotes, setAdminNotes] = useState('');
+
+  // Mark as failed form
+  const [showMarkFailedForm, setShowMarkFailedForm] = useState(false);
+  const [failureReason, setFailureReason] = useState('');
 
   useEffect(() => {
     fetchPayouts();
@@ -51,44 +60,99 @@ const AdminPayouts = () => {
     }
   };
 
-  // Retry failed Stripe transfer
-  const handleRetryPayout = async (payoutId) => {
-    setRetrying(true);
+  const handleMarkPaid = async () => {
+    if (!transferReference.trim()) {
+      showNotification('error', 'Validation Error', 'Please enter a transfer reference.');
+      return;
+    }
+
+    setProcessing(true);
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/admin/payouts/${payoutId}/retry-stripe`,
+        `${BACKEND_URL}/api/admin/payouts/${selectedPayout.id}/mark-paid`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            bank_transfer_reference: transferReference,
+            admin_notes: adminNotes
+          })
         }
       );
 
       if (response.ok) {
-        showNotification('success', 'Retry Initiated', 'Stripe transfer retry initiated');
+        showNotification('success', 'Paid', 'Payout marked as paid successfully');
         fetchPayouts();
         closeModal();
       } else {
         const error = await response.json();
-        showNotification('error', 'Error', error.detail || 'Failed to retry transfer');
+        showNotification('error', 'Error', error.detail || 'Failed to mark as paid');
       }
     } catch (error) {
-      console.error('Error retrying payout:', error);
-      showNotification('error', 'Error', 'Failed to retry transfer');
+      console.error('Error marking payout as paid:', error);
+      showNotification('error', 'Error', 'Failed to mark as paid');
     } finally {
-      setRetrying(false);
+      setProcessing(false);
+    }
+  };
+
+  const handleMarkFailed = async () => {
+    if (!failureReason.trim()) {
+      showNotification('error', 'Validation Error', 'Please enter a failure reason.');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/admin/payouts/${selectedPayout.id}/mark-failed`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            failure_reason: failureReason,
+            admin_notes: adminNotes
+          })
+        }
+      );
+
+      if (response.ok) {
+        showNotification('success', 'Failed', 'Payout marked as failed');
+        fetchPayouts();
+        closeModal();
+      } else {
+        const error = await response.json();
+        showNotification('error', 'Error', error.detail || 'Failed to mark as failed');
+      }
+    } catch (error) {
+      console.error('Error marking payout as failed:', error);
+      showNotification('error', 'Error', 'Failed to mark as failed');
+    } finally {
+      setProcessing(false);
     }
   };
 
   const openModal = (payout) => {
     setSelectedPayout(payout);
     setShowModal(true);
+    setShowMarkPaidForm(false);
+    setShowMarkFailedForm(false);
+    setTransferReference('');
+    setAdminNotes('');
+    setFailureReason('');
   };
 
   const closeModal = () => {
     setShowModal(false);
     setSelectedPayout(null);
+    setShowMarkPaidForm(false);
+    setShowMarkFailedForm(false);
   };
 
   const copyToClipboard = (text) => {
@@ -131,7 +195,7 @@ const AdminPayouts = () => {
           <Wallet className="header-icon" size={28} />
           <div>
             <h1>Payout Management</h1>
-            <p>Track automatic Stripe Connect payouts to developers</p>
+            <p>Manage manual bank transfer payouts to developers</p>
           </div>
         </div>
 
@@ -141,12 +205,12 @@ const AdminPayouts = () => {
         </button>
       </div>
 
-      {/* Stripe Connect Info Banner */}
-      <div className="stripe-info-banner">
-        <CreditCard size={20} />
+      {/* Bank Transfer Info Banner */}
+      <div className="bank-transfer-info-banner">
+        <Landmark size={20} />
         <div>
-          <strong>Automatic Payouts via Payoneer</strong>
-          <p>All developer payouts are processed automatically through Payoneer. When an investor confirms a project, funds are instantly transferred to the developer's connected Payoneer account.</p>
+          <strong>Manual Bank Transfer Payouts</strong>
+          <p>Developer payouts are processed manually via bank transfer. When an investor confirms a project, a payout is created as pending. An admin must initiate the bank transfer and mark the payout as paid with a transfer reference.</p>
         </div>
       </div>
 
@@ -246,7 +310,7 @@ const AdminPayouts = () => {
                 <th>Developer</th>
                 <th>Project</th>
                 <th>Amount</th>
-                <th>Stripe Transfer</th>
+                <th>Bank Details</th>
                 <th>Status</th>
                 <th>Created</th>
                 <th>Actions</th>
@@ -275,17 +339,16 @@ const AdminPayouts = () => {
                     </div>
                   </td>
                   
-                  <td className="transfer-cell">
-                    {payout.payoneer_transfer_id ? (
-                      <span className="payoneer-transfer-id" title={payout.payoneer_transfer_id}>
-                        <CreditCard size={14} />
-                        {payout.payoneer_transfer_id.substring(0, 12)}...
+                  <td className="bank-cell">
+                    {payout.developer?.bank_name ? (
+                      <span className="bank-info" title={`${payout.developer.bank_name} - ${payout.developer.bank_account_holder}`}>
+                        <Landmark size={14} />
+                        {payout.developer.bank_name}
                       </span>
                     ) : (
-                      <span className="no-transfer">Awaiting transfer</span>
+                      <span className="no-bank">No bank details</span>
                     )}
                   </td>
-
 
                   <td>{getStatusBadge(payout.status)}</td>
                   <td className="date-cell">{formatDate(payout.created_at)}</td>
@@ -297,16 +360,6 @@ const AdminPayouts = () => {
                     >
                       <Eye size={18} />
                     </button>
-                    {payout.status === 'failed' && (
-                      <button
-                        className="btn-icon retry"
-                        onClick={() => handleRetryPayout(payout.id)}
-                        title="Retry Stripe Transfer"
-                        disabled={retrying}
-                      >
-                        <RefreshCw size={18} />
-                      </button>
-                    )}
                   </td>
                 </tr>
               ))}
@@ -364,51 +417,68 @@ const AdminPayouts = () => {
                 </div>
               </div>
 
-              {/* Stripe Connect Transfer Details */}
+              {/* Bank Transfer Details */}
               <div className="detail-section">
-                <h3><CreditCard size={18} /> Payoneer Transfer Details</h3>
-                <div className="stripe-transfer-details">
+                <h3><Landmark size={18} /> Bank Account Details</h3>
+                <div className="bank-transfer-details">
                   <div className="detail-grid">
                     <div className="detail-item full-width">
-                      <label>Payoneer Transfer ID</label>
-                      {selectedPayout.payoneer_transfer_id ? (
-                        <span className="copyable" onClick={() => copyToClipboard(selectedPayout.payoneer_transfer_id)}>
-                          {selectedPayout.payoneer_transfer_id}
-                          <Copy size={14} />
-                        </span>
-                      ) : (
-                        <span className="no-data">Not yet transferred</span>
-                      )}
+                      <label>Bank Name</label>
+                      <span>{selectedPayout.developer?.bank_name || 'Not provided'}</span>
+                    </div>
+                    <div className="detail-item full-width">
+                      <label>Account Holder</label>
+                      <span>{selectedPayout.developer?.bank_account_holder || 'Not provided'}</span>
                     </div>
                     <div className="detail-item">
-                      <label>Transfer Status</label>
-                      <span>{selectedPayout.payoneer_transfer_status || selectedPayout.status}</span>
+                      <label>Account Number</label>
+                      <span>{selectedPayout.developer?.bank_account_number || 'Not provided'}</span>
                     </div>
-                    {selectedPayout.developer?.stripe_account_id && (
+                    <div className="detail-item">
+                      <label>Routing Number</label>
+                      <span>{selectedPayout.developer?.bank_routing_number || 'Not provided'}</span>
+                    </div>
+                    {selectedPayout.developer?.bank_iban && (
                       <div className="detail-item">
-                        <label>Connected Account</label>
-                        <span className="copyable" onClick={() => copyToClipboard(selectedPayout.developer.stripe_account_id)}>
-                          {selectedPayout.developer.stripe_account_id.substring(0, 20)}...
-                          <Copy size={14} />
-                        </span>
+                        <label>IBAN</label>
+                        <span>{selectedPayout.developer.bank_iban}</span>
+                      </div>
+                    )}
+                    {selectedPayout.developer?.bank_swift_code && (
+                      <div className="detail-item">
+                        <label>SWIFT Code</label>
+                        <span>{selectedPayout.developer.bank_swift_code}</span>
+                      </div>
+                    )}
+                    <div className="detail-item">
+                      <label>Currency</label>
+                      <span>{selectedPayout.developer?.bank_currency || 'USD'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transfer Reference */}
+              {selectedPayout.bank_transfer_reference && (
+                <div className="detail-section">
+                  <h3><CheckCircle size={18} /> Transfer Reference</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item full-width">
+                      <label>Bank Transfer Reference</label>
+                      <span className="copyable" onClick={() => copyToClipboard(selectedPayout.bank_transfer_reference)}>
+                        {selectedPayout.bank_transfer_reference}
+                        <Copy size={14} />
+                      </span>
+                    </div>
+                    {selectedPayout.admin_notes && (
+                      <div className="detail-item full-width">
+                        <label>Admin Notes</label>
+                        <span>{selectedPayout.admin_notes}</span>
                       </div>
                     )}
                   </div>
-
-                  {/* View in Stripe Dashboard Link */}
-                  {selectedPayout.stripe_transfer_id && (
-                    <a
-                      href={`https://dashboard.stripe.com/connect/transfers/${selectedPayout.stripe_transfer_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="stripe-dashboard-link"
-                    >
-                      <ExternalLink size={16} />
-                      View in Stripe Dashboard
-                    </a>
-                  )}
                 </div>
-              </div>
+              )}
 
               {/* Completed Info */}
               {selectedPayout.status === 'completed' && (
@@ -418,7 +488,7 @@ const AdminPayouts = () => {
                     <CheckCircle size={24} />
                     <div>
                       <strong>Funds transferred successfully</strong>
-                      <p>The developer has received ${selectedPayout.net_amount?.toFixed(2)} in their connected Stripe account.</p>
+                      <p>The developer has received ${selectedPayout.net_amount?.toFixed(2)} via bank transfer.</p>
                     </div>
                   </div>
                   <div className="detail-grid">
@@ -430,53 +500,135 @@ const AdminPayouts = () => {
                 </div>
               )}
 
-              {/* Failed Info with Retry Option */}
-              {selectedPayout.status === 'failed' && (
+              {/* Pending/Processing - Show Mark Paid/Failed Actions */}
+              {(selectedPayout.status === 'pending' || selectedPayout.status === 'failed') && (
+                <div className="detail-section actions-section">
+                  <h3>Admin Actions</h3>
+                  {!showMarkPaidForm && !showMarkFailedForm && (
+                    <div className="admin-action-buttons">
+                      <button
+                        className="btn btn-success"
+                        onClick={() => {
+                          setShowMarkPaidForm(true);
+                          setShowMarkFailedForm(false);
+                        }}
+                      >
+                        <CheckCircle size={18} />
+                        Mark as Paid
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => {
+                          setShowMarkFailedForm(true);
+                          setShowMarkPaidForm(false);
+                        }}
+                      >
+                        <XCircle size={18} />
+                        Mark as Failed
+                      </button>
+                    </div>
+                  )}
+                  {showMarkPaidForm && (
+                    <div className="mark-paid-form">
+                      <div className="form-group">
+                        <label>Bank Transfer Reference *</label>
+                        <input
+                          type="text"
+                          value={transferReference}
+                          onChange={(e) => setTransferReference(e.target.value)}
+                          placeholder="e.g. Wire confirmation number, transaction ID"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Admin Notes (Optional)</label>
+                        <textarea
+                          value={adminNotes}
+                          onChange={(e) => setAdminNotes(e.target.value)}
+                          placeholder="Any notes about this transfer"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="form-actions">
+                        <button
+                          className="btn btn-primary"
+                          onClick={handleMarkPaid}
+                          disabled={processing}
+                        >
+                          {processing ? <RefreshCw size={18} className="spin" /> : <Check size={18} />}
+                          Confirm Paid
+                        </button>
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => setShowMarkPaidForm(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {showMarkFailedForm && (
+                    <div className="mark-failed-form">
+                      <div className="form-group">
+                        <label>Failure Reason *</label>
+                        <textarea
+                          value={failureReason}
+                          onChange={(e) => setFailureReason(e.target.value)}
+                          placeholder="Why did the transfer fail?"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Admin Notes (Optional)</label>
+                        <textarea
+                          value={adminNotes}
+                          onChange={(e) => setAdminNotes(e.target.value)}
+                          placeholder="Any additional notes"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="form-actions">
+                        <button
+                          className="btn btn-danger"
+                          onClick={handleMarkFailed}
+                          disabled={processing}
+                        >
+                          {processing ? <RefreshCw size={18} className="spin" /> : <XCircle size={18} />}
+                          Confirm Failed
+                        </button>
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => setShowMarkFailedForm(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Pending/Processing Info */}
+              {selectedPayout.status === 'processing' && (
+                <div className="detail-section info-section">
+                  <div className="info-message">
+                    <Clock size={20} />
+                    <div>
+                      <strong>Transfer in progress</strong>
+                      <p>This payout is being processed. Please check the status and mark as paid or failed when appropriate.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Failed Info */}
+              {selectedPayout.status === 'failed' && !showMarkPaidForm && !showMarkFailedForm && (
                 <div className="detail-section failed-section">
                   <h3><XCircle size={18} /> Transfer Failed</h3>
                   <div className="failure-reason">
                     <AlertTriangle size={20} />
                     <div>
                       <strong>Transfer failed</strong>
-                      <p>{selectedPayout.failure_reason || 'The Stripe transfer could not be completed. This may be due to the developer\'s account configuration.'}</p>
-                    </div>
-                  </div>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleRetryPayout(selectedPayout.id)}
-                    disabled={retrying}
-                  >
-                    {retrying ? (
-                      <>
-                        <RefreshCw size={18} className="spin" />
-                        Retrying...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw size={18} />
-                        Retry Stripe Transfer
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
-
-              {/* Pending/Processing Info */}
-              {(selectedPayout.status === 'pending' || selectedPayout.status === 'processing') && (
-                <div className="detail-section info-section">
-                  <div className="info-message">
-                    <Clock size={20} />
-                    <div>
-                      <strong>
-                        {selectedPayout.status === 'pending'
-                          ? 'Awaiting investor confirmation'
-                          : 'Transfer in progress'}
-                      </strong>
-                      <p>
-                        {selectedPayout.status === 'pending'
-                          ? 'This payout will be processed automatically when the investor confirms the project completion.'
-                          : 'The Stripe transfer is being processed. Funds will arrive in the developer\'s account shortly.'}
-                      </p>
+                      <p>{selectedPayout.failure_reason || "The bank transfer failed. Please check the developer's bank details and retry."}</p>
                     </div>
                   </div>
                 </div>

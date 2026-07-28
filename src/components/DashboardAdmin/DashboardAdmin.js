@@ -458,7 +458,7 @@ const handleUpdateProject = async (e) => {
         formData.append('image', image.file);
         
         try {
-          const uploadResponse = await fetch(`${BACKEND_URL}/api/projects/upload-image`, {
+          const uploadResponse = await fetch(`${BACKEND_URL}/api/upload/upload-image`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`

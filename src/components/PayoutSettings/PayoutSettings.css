@@ -1,4 +1,4 @@
-/* /* ============================================
+/* ============================================
    PAYOUT SETTINGS STYLES
    ============================================ */
 
@@ -165,9 +165,9 @@
    CONNECT PROMPT - CENTERED
    ============================================ */
 
-.payoneer-not-connected {
+.bank-form-section {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   width: 100%;
   min-height: 400px;
@@ -181,14 +181,14 @@
   margin: 0 auto;
 }
 
-.payoneer-logo {
+.bank-logo {
   width: 80px;
   height: 80px;
   margin: 0 auto 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0072CE 0%, #005A9C 100%);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   border-radius: 20px;
   color: white;
 }
@@ -207,32 +207,90 @@
   line-height: 1.6;
 }
 
-.benefits-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 2rem;
-  text-align: left;
+/* ============================================
+   BANK FORM
+   ============================================ */
+
+.bank-form {
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 
-.benefits-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0;
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.375rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   font-size: 0.9375rem;
   color: var(--text-primary);
+  background: var(--background);
+  transition: border-color 0.2s;
 }
 
-.benefits-list li svg {
-  color: #15803d;
-  flex-shrink: 0;
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-100, rgba(59, 130, 246, 0.1));
 }
 
-.btn-connect {
+.form-group input.error {
+  border-color: #dc2626;
+}
+
+.error-text {
+  display: block;
+  font-size: 0.8125rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+}
+
+.hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #6b7280);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.btn-save {
   width: 100%;
+  max-width: 300px;
   padding: 1rem 1.5rem;
   font-size: 1rem;
-  background: linear-gradient(135deg, #0072CE 0%, #005A9C 100%);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -244,21 +302,31 @@
   transition: all 0.2s;
 }
 
-.btn-connect:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0063b3 0%, #004a80 100%);
+.btn-save:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 114, 206, 0.3);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
 }
 
-.btn-connect:disabled {
+.btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.payoneer-note-small {
+.bank-security-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem;
+  background: var(--info-100, #dbeafe);
+  border-radius: 8px;
   font-size: 0.8125rem;
-  color: var(--text-secondary);
-  margin: 1rem 0 0;
+  color: var(--info-700, #1d4ed8);
+}
+
+.bank-security-note svg {
+  flex-shrink: 0;
 }
 
 /* ============================================
@@ -284,15 +352,6 @@
   color: #15803d;
 }
 
-.connected-banner.unverified {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 1px solid #fcd34d;
-}
-
-.connected-banner.unverified svg {
-  color: #b45309;
-}
-
 .connected-banner h3 {
   margin: 0 0 0.25rem;
   font-size: 1.125rem;
@@ -307,10 +366,10 @@
 }
 
 /* ============================================
-   PAYONEER INFO CARD
+   BANK INFO CARD
    ============================================ */
 
-.payoneer-info-card {
+.bank-info-card {
   background: var(--background-secondary);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -344,29 +403,17 @@
   font-weight: 500;
 }
 
-.info-row .value.status-enabled {
-  color: #15803d;
-}
-
-.info-row .value.status-pending {
-  color: #b45309;
-}
-
-.info-row .value.status-disabled {
-  color: #b91c1c;
-}
-
-.info-row .value.account-id {
+.info-row .value.account-masked {
   font-family: monospace;
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
 /* ============================================
-   PAYONEER ACTIONS
+   BANK ACTIONS
    ============================================ */
 
-.payoneer-actions {
+.bank-actions {
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
@@ -374,7 +421,7 @@
   flex-wrap: wrap;
 }
 
-.payoneer-actions .btn {
+.bank-actions .btn {
   flex: 1;
   min-width: 120px;
 }
@@ -394,12 +441,12 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #0072CE 0%, #005A9C 100%);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0063b3 0%, #004a80 100%);
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
 }
 
 .btn-primary:disabled {
@@ -419,10 +466,10 @@
 }
 
 /* ============================================
-   PAYONEER NOTE
+   BANK NOTE
    ============================================ */
 
-.payoneer-note {
+.bank-note {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
@@ -434,12 +481,12 @@
   width: 100%;
 }
 
-.payoneer-note svg {
+.bank-note svg {
   flex-shrink: 0;
   margin-top: 0.125rem;
 }
 
-.payoneer-note p {
+.bank-note p {
   margin: 0;
   line-height: 1.5;
 }
@@ -592,16 +639,20 @@
     flex: 1;
   }
 
-  .payoneer-actions {
+  .bank-actions {
     flex-direction: column;
   }
 
-  .payoneer-actions .btn {
+  .bank-actions .btn {
     width: 100%;
   }
 
   .connect-prompt {
     padding: 1.5rem 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
   }
 
   .payouts-table {
@@ -630,11 +681,7 @@
     margin-bottom: 0.5rem;
   }
 
-  .benefits-list li {
-    font-size: 0.875rem;
-  }
-
-  .btn-connect {
+  .btn-save {
     font-size: 0.9375rem;
     padding: 0.875rem 1rem;
   }

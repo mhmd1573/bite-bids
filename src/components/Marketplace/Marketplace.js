@@ -301,7 +301,7 @@ useEffect(() => {
           
           try {
             const uploadResponse = await axios.post(
-              `${BACKEND_URL}/api/projects/upload-image`,
+              `${BACKEND_URL}/api/upload/upload-image`,
               formData,
               {
                 headers: {

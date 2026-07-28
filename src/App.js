@@ -1269,7 +1269,7 @@ const formatPaymentValue = (value) => Number(value || 0).toLocaleString();
       </main> */}
 
 
-            {/* Main Content */}
+       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
      
       {/* Navbar is always visible now */}

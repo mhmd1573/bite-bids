@@ -31,7 +31,7 @@ const AdminDisputes = () => {
       setLoading(true);
       
       // ✅ UPDATED: Use simplified endpoint (works without project_deliveries table)
-      const response = await fetch(`${BACKEND_URL}/api/admin/disputes-simple`, {
+      const response = await fetch(`${BACKEND_URL}/api/disputes/admin/disputes-simple`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -70,7 +70,7 @@ const AdminDisputes = () => {
       
       // ✅ UPDATED: Use simplified endpoint
       const response = await fetch(
-        `${BACKEND_URL}/api/admin/disputes-simple/${selectedDispute.id}/resolve`,
+        `${BACKEND_URL}/api/admin/disputes/disputes-simple/${selectedDispute.id}/resolve`,
         {
           method: 'POST',
           headers: {

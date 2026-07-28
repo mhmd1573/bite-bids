@@ -512,7 +512,7 @@ const handleInitiatePostProject = async () => {
             
             try {
               const uploadResponse = await axios.post(
-                `${BACKEND_URL}/api/projects/upload-image`,
+                `${BACKEND_URL}/api/upload/upload-image`,
                 formData,
                 {
                   headers: {
@@ -727,7 +727,7 @@ const handleInitiatePostProject = async () => {
         
         try {
           const uploadResponse = await axios.post(
-            `${BACKEND_URL}/api/projects/upload-image`,
+            `${BACKEND_URL}/api/upload/upload-image`,
             formData,
             {
               headers: {
@@ -1792,33 +1792,6 @@ const handleInitiatePostProject = async () => {
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              {/* <div className="sidebar-card">
-                <div className="sidebar-card-header">
-                  <Zap className="w-5 h-5 text-success-600" />
-                  <h3>Quick Actions</h3>
-                </div>
-                <div className="sidebar-card-body">
-                  <div className="quick-actions">
-                    <button className="quick-action-btn">
-                      <Plus className="w-4 h-4" />
-                      <span>Submit Milestone</span>
-                    </button>
-                    <button className="quick-action-btn">
-                      <MessageSquare className="w-4 h-4" />
-                      <span>Send Message</span>
-                    </button>
-                    <button className="quick-action-btn">
-                      <FileText className="w-4 h-4" />
-                      <span>Create Invoice</span>
-                    </button>
-                    <button className="quick-action-btn">
-                      <Calendar className="w-4 h-4" />
-                      <span>Schedule Meeting</span>
-                    </button>
-                  </div>
-                </div>
-              </div> */}
             </aside>
 
           </div>
