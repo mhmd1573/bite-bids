@@ -563,7 +563,7 @@ const getLanguage = (filename) => {
 
     // Step 3: Check for active dispute
     console.log('📡 Step 3: Checking for active dispute...');
-    const disputeUrl = `${BACKEND_URL}/api/chat/rooms/${roomId}/has-active-dispute`;
+    const disputeUrl = `${BACKEND_URL}/api/disputes/chat/rooms/${roomId}/has-active-dispute`;
     console.log('   URL:', disputeUrl);
     
     const disputeResponse = await fetch(disputeUrl, {
@@ -692,7 +692,7 @@ const handleSubmitRepo = async (e) => {
   setSubmittingRepo(true);
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/chat/rooms/${roomId}/submit-github-repo`, {
+    const response = await fetch(`${BACKEND_URL}/api/github/chat/rooms/${roomId}/submit-github-repo`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
