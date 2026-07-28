@@ -116,7 +116,7 @@ const AdminChatViewPage = ({ roomId, navigateBack }) => {
   // ✅ NEW: Fetch GitHub repository
   const fetchGithubRepo = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/chat/rooms/${roomId}/github-repo`, {
+      const response = await fetch(`${BACKEND_URL}/api/github/chat/rooms/${roomId}/github-repo`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
