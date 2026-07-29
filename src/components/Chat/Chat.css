@@ -139,6 +139,16 @@ main:has(.chat-page) {
   background: #e5e7eb;
 }
 
+/* Cloud View Button - Investor can browse uploaded project from cloud */
+.cloud-view-btn {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.cloud-view-btn:hover:not(:disabled) {
+  background: #c7d2fe;
+}
+
 /* Review Project Button */
 .review-project-btn {
   background: #dbeafe;

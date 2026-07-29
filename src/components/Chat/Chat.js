@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertTriangle, Shield, Loader, Download, X, FolderTree, FileText, Folder, ChevronRight, ChevronDown, Wallet, CreditCard, DollarSign, AlertCircle, CheckCircle2, Upload, Cloud, Clock } from 'lucide-react';
+import { Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertTriangle, Shield, Loader, Download, X, FolderTree, FileText, Folder, ChevronRight, ChevronDown, Wallet, CreditCard, DollarSign, AlertCircle, CheckCircle2, Upload, Cloud, Clock, Eye } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import './Chat.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -1885,6 +1885,8 @@ const renderFileTree = (items, parentPath = '') => {
   const canSubmitRepo = isDeveloper && (!hasGithubRepo || !hasUploadedProject);
   // Project can be reviewed only when BOTH GitHub repo AND upload exist
   const canReviewProject = hasGithubRepo && hasUploadedProject;
+  // ✅ NEW: Investor can view the uploaded project directly from cloud storage
+  const canCloudView = !isDeveloper && hasUploadedProject;
   // Download button visibility:
   // - Developer: can download when upload exists
   // - Investor: can only download AFTER confirming the project
@@ -1902,6 +1904,7 @@ const renderFileTree = (items, parentPath = '') => {
     canOpenDispute,
     canSubmitRepo,
     canReviewProject,
+    canCloudView,
     canDownloadProject,
     hasGithubRepo,
     hasUploadedProject,
@@ -1990,7 +1993,19 @@ const renderFileTree = (items, parentPath = '') => {
             </div>
           )}
 
-          {/* ✅ NEW: Review Project Button */}
+          {/* ✅ NEW: Cloud View Button - Investor can browse the uploaded project from cloud storage */}
+          {canCloudView && (
+            <button
+              className="chat-action-btn cloud-view-btn"
+              onClick={loadUploadedProjectStructure}
+              title="Browse project files from cloud storage"
+            >
+              <Eye size={18} />
+              <span>Cloud View</span>
+            </button>
+          )}
+
+          {/* ✅ NEW: Review Project Button (GitHub) - only when both GitHub AND upload exist */}
           {canReviewProject && (
             <button
               className="chat-action-btn review-project-btn"
