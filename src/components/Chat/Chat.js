@@ -40,17 +40,19 @@ const Chat = ({ roomId, currentUser, projectTitle }) => {
   const [disputeReason, setDisputeReason] = useState('');
   const [disputeNotes, setDisputeNotes] = useState('');
   
-  // ✅ NEW: GitHub Repository Review States
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [githubRepo, setGithubRepo] = useState(null);
-  const [repoFiles, setRepoFiles] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [fileContent, setFileContent] = useState('');
-  const [loadingFile, setLoadingFile] = useState(false);
-  const [expandedFolders, setExpandedFolders] = useState(new Set());
-  const [showSubmitRepoModal, setShowSubmitRepoModal] = useState(false);
-  const [repoUrl, setRepoUrl] = useState('');
-  const [submittingRepo, setSubmittingRepo] = useState(false);
+// ✅ NEW: GitHub Repository Review States
+const [showReviewModal, setShowReviewModal] = useState(false);
+const [githubRepo, setGithubRepo] = useState(null);
+const [repoFiles, setRepoFiles] = useState(null);
+const [selectedFile, setSelectedFile] = useState(null);
+const [fileContent, setFileContent] = useState('');
+const [loadingFile, setLoadingFile] = useState(false);
+const [expandedFolders, setExpandedFolders] = useState(new Set());
+const [showSubmitRepoModal, setShowSubmitRepoModal] = useState(false);
+const [repoUrl, setRepoUrl] = useState('');
+const [submittingRepo, setSubmittingRepo] = useState(false);
+// ✅ NEW: Track whether we're in "Cloud View" mode (reading from R2) or GitHub mode
+const [isCloudViewMode, setIsCloudViewMode] = useState(false);
   
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -1157,29 +1159,52 @@ const handleDownloadUploadedProject = async () => {
   }
 };
 
-  // ✅ NEW: Load file content from GitHub
+  // ✅ NEW: Load file content - from GitHub OR from R2 cloud storage
   const loadFileContent = async (filePath) => {
     setLoadingFile(true);
     setSelectedFile(filePath);
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/github/file-content`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          repo_url: githubRepo.repo_url,
-          file_path: filePath 
-        })
-      });
+      if (isCloudViewMode) {
+        // ✅ Load from R2 cloud storage (ZIP file)
+        const response = await fetch(`${BACKEND_URL}/api/upload/file-content/${roomId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            file_path: filePath
+          })
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        setFileContent(data.content);
+        if (response.ok) {
+          const data = await response.json();
+          setFileContent(data.content);
+        } else {
+          const error = await response.json();
+          setFileContent(`Error: ${error.detail || 'Failed to load file from cloud storage'}`);
+        }
       } else {
-        setFileContent('Error loading file content');
+        // ✅ Load from GitHub
+        const response = await fetch(`${BACKEND_URL}/api/github/file-content`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            repo_url: githubRepo.repo_url,
+            file_path: filePath 
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setFileContent(data.content);
+        } else {
+          setFileContent('Error loading file content');
+        }
       }
     } catch (error) {
       console.error('Error loading file:', error);
@@ -1301,7 +1326,7 @@ const convertUploadTreeToDisplayFormat = (node) => {
   return [convert(node)].filter(Boolean);
 };
 
-// ✅ NEW: Load uploaded project structure for review
+// ✅ NEW: Load uploaded project structure for review (from R2 cloud storage)
 const loadUploadedProjectStructure = () => {
   if (!projectUpload || !projectUpload.file_tree) {
     showNotification('error', 'Project Missing', 'No uploaded project available.');
@@ -1312,6 +1337,7 @@ const loadUploadedProjectStructure = () => {
   const displayTree = convertUploadTreeToDisplayFormat(projectUpload.file_tree);
 
   setRepoFiles(displayTree);
+  setIsCloudViewMode(true); // ✅ Mark that we're in Cloud View mode (R2)
   setShowReviewModal(true);
 };
 
@@ -2860,6 +2886,7 @@ const renderFileTree = (items, parentPath = '') => {
                   setRepoFiles(null);
                   setSidebarCollapsed(false);
                   setIsFullscreen(false);
+                  setIsCloudViewMode(false); // ✅ Reset cloud view mode
                 }}
               >
                 ×
