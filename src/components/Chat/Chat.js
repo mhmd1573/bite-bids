@@ -496,123 +496,220 @@ const getLanguage = (filename) => {
     };
 
 
-  const fetchProjectDetails = async () => {
+  // const fetchProjectDetails = async () => {
+  // console.log('🔍 fetchProjectDetails called for roomId:', roomId);
+  // console.log('📍 Current roomId value:', roomId);
+  // console.log('📍 BACKEND_URL:', BACKEND_URL);
+  
+  // try {
+  //   // Step 1: Get room data
+  //   console.log('📡 Step 1: Fetching room data...');
+  //   const roomUrl = `${BACKEND_URL}/api/chat/rooms/${roomId}`;
+  //   console.log('   URL:', roomUrl);
+    
+  //   const response = await fetch(roomUrl, {
+  //     headers: {
+  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //     }
+  //   });
+    
+  //   console.log('📡 Room response status:', response.status);
+    
+  //   if (!response.ok) {
+  //     const errorText = await response.text();
+  //     console.error('❌ Failed to fetch room data:', response.status, errorText);
+  //     return;
+  //   }
+    
+  //   const room = await response.json();
+  //   console.log('✅ Room data received:', {
+  //     developer_id: room.developer_id,
+  //     investor_id: room.investor_id,
+  //     project_id: room.project_id,
+  //     status: room.status
+  //   });
+    
+  //   // Step 2: Get project details
+  //   console.log('📡 Step 2: Fetching project data...');
+  //   const projectUrl = `${BACKEND_URL}/api/projects/${room.project_id}`;
+  //   console.log('   URL:', projectUrl);
+    
+  //   const projectResponse = await fetch(projectUrl, {
+  //     headers: {
+  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //     }
+  //   });
+    
+  //   console.log('📡 Project response status:', projectResponse.status);
+    
+  //   if (!projectResponse.ok) {
+  //     const errorText = await projectResponse.text();
+  //     console.error('❌ Failed to fetch project:', projectResponse.status, errorText);
+  //     return;
+  //   }
+    
+  //   const project = await projectResponse.json();
+  //   console.log('✅ Project data received:', {
+  //     id: project.id,
+  //     title: project.title,
+  //     status: project.status,
+  //     developer_id: project.developer_id
+  //   });
+    
+  //   setProjectData(project);
+  //   console.log('✅ projectData state updated');
+
+  //   // Step 3: Check for active dispute
+  //   console.log('📡 Step 3: Checking for active dispute...');
+  //   const disputeUrl = `${BACKEND_URL}/api/disputes/chat/rooms/${roomId}/has-active-dispute`;
+  //   console.log('   URL:', disputeUrl);
+    
+  //   const disputeResponse = await fetch(disputeUrl, {
+  //     headers: {
+  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //     }
+  //   });
+    
+  //   console.log('📡 Dispute response status:', disputeResponse.status);
+    
+  //   if (!disputeResponse.ok) {
+  //     const errorText = await disputeResponse.text();
+  //     console.error('❌ Failed to check dispute status:', disputeResponse.status, errorText);
+  //     console.log('⚠️ Setting hasActiveDispute to false (safe default)');
+  //     setHasActiveDispute(false);
+  //     return;
+  //   }
+    
+  //   const disputeData = await disputeResponse.json();
+  //   console.log('📋 Full Dispute API Response:', JSON.stringify(disputeData, null, 2));
+  //   console.log('📋 disputeData.has_active_dispute type:', typeof disputeData.has_active_dispute);
+  //   console.log('📋 disputeData.has_active_dispute value:', disputeData.has_active_dispute);
+    
+  //   // ✅ CRITICAL: Set the state
+  //   const disputeActive = disputeData.has_active_dispute === true;
+  //   console.log('⚙️ Computed disputeActive:', disputeActive);
+  //   console.log('⚙️ Calling setHasActiveDispute with:', disputeActive);
+    
+  //   setHasActiveDispute(disputeActive);
+    
+  //   // Verify it was set
+  //   console.log('✅ setHasActiveDispute called successfully');
+    
+  //   if (disputeActive) {
+  //     console.log('🚨 ACTIVE DISPUTE DETECTED! 🚨');
+  //     console.log('   - Dispute ID:', disputeData.dispute_id);
+  //     console.log('   - Reason:', disputeData.reason);
+  //     console.log('   - Status:', disputeData.status);
+  //     console.log('   - 🔴 Buttons should now be DISABLED');
+  //   } else {
+  //     console.log('✅ No active dispute detected');
+  //     console.log('   - 🟢 Buttons should be ENABLED');
+  //   }
+    
+  // } catch (error) {
+  //   console.error('❌ EXCEPTION in fetchProjectDetails:', error);
+  //   console.error('   Error name:', error.name);
+  //   console.error('   Error message:', error.message);
+  //   console.error('   Error stack:', error.stack);
+  //   console.log('⚠️ Setting hasActiveDispute to false (safe default after error)');
+  //   setHasActiveDispute(false); // Safe default
+  // }
+  //   };
+
+
+    const fetchProjectDetails = async () => {
   console.log('🔍 fetchProjectDetails called for roomId:', roomId);
-  console.log('📍 Current roomId value:', roomId);
-  console.log('📍 BACKEND_URL:', BACKEND_URL);
   
   try {
     // Step 1: Get room data
-    console.log('📡 Step 1: Fetching room data...');
     const roomUrl = `${BACKEND_URL}/api/chat/rooms/${roomId}`;
-    console.log('   URL:', roomUrl);
-    
     const response = await fetch(roomUrl, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
     
-    console.log('📡 Room response status:', response.status);
-    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Failed to fetch room data:', response.status, errorText);
+      console.error('❌ Failed to fetch room data');
       return;
     }
     
     const room = await response.json();
-    console.log('✅ Room data received:', {
-      developer_id: room.developer_id,
-      investor_id: room.investor_id,
-      project_id: room.project_id,
-      status: room.status
-    });
+    console.log('✅ Room data received:', room);
     
     // Step 2: Get project details
-    console.log('📡 Step 2: Fetching project data...');
     const projectUrl = `${BACKEND_URL}/api/projects/${room.project_id}`;
-    console.log('   URL:', projectUrl);
-    
     const projectResponse = await fetch(projectUrl, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
     
-    console.log('📡 Project response status:', projectResponse.status);
-    
     if (!projectResponse.ok) {
-      const errorText = await projectResponse.text();
-      console.error('❌ Failed to fetch project:', projectResponse.status, errorText);
+      console.error('❌ Failed to fetch project');
       return;
     }
     
     const project = await projectResponse.json();
-    console.log('✅ Project data received:', {
-      id: project.id,
-      title: project.title,
-      status: project.status,
-      developer_id: project.developer_id
+    console.log('✅ Project data received:', project);
+    setProjectData(project);
+    
+    // ✅ NEW: Check if project is completed - this persists across refreshes
+    const isCompleted = project.status === 'completed';
+    console.log('📊 Project status:', project.status, 'isCompleted:', isCompleted);
+    
+    // ✅ NEW: Check if there's a pending payout (which means investor confirmed)
+    const payoutUrl = `${BACKEND_URL}/api/chat/rooms/${roomId}/pending-payout`;
+    const payoutResponse = await fetch(payoutUrl, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     });
     
-    setProjectData(project);
-    console.log('✅ projectData state updated');
+    if (payoutResponse.ok) {
+      const payoutData = await payoutResponse.json();
+      console.log('💰 Payout data:', payoutData);
+      
+      // If there's a pending payout OR project is completed, show download button
+      // This handles both: just confirmed and refreshed page
+      const hasPayout = payoutData?.has_pending_payout === true;
+      const isPayoutCompleted = payoutData?.payout?.status === 'completed';
+      
+      // Show download button if:
+      // 1. Project is completed (status from DB)
+      // 2. OR there's a pending payout (means investor confirmed)
+      // 3. OR payout is completed (payment processed)
+      const shouldShowDownload = isCompleted || hasPayout || isPayoutCompleted;
+      
+      console.log('🔘 Should show download button:', shouldShowDownload);
+      setHasConfirmedProject(shouldShowDownload);
+      
+      // Also store the payout data
+      if (payoutData?.payout) {
+        setPendingPayout(payoutData);
+      }
+    } else {
+      // If no payout endpoint, fallback to project status
+      console.log('⚠️ No payout data, using project status');
+      setHasConfirmedProject(isCompleted);
+    }
 
     // Step 3: Check for active dispute
-    console.log('📡 Step 3: Checking for active dispute...');
     const disputeUrl = `${BACKEND_URL}/api/disputes/chat/rooms/${roomId}/has-active-dispute`;
-    console.log('   URL:', disputeUrl);
-    
     const disputeResponse = await fetch(disputeUrl, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
     
-    console.log('📡 Dispute response status:', disputeResponse.status);
-    
-    if (!disputeResponse.ok) {
-      const errorText = await disputeResponse.text();
-      console.error('❌ Failed to check dispute status:', disputeResponse.status, errorText);
-      console.log('⚠️ Setting hasActiveDispute to false (safe default)');
-      setHasActiveDispute(false);
-      return;
-    }
-    
-    const disputeData = await disputeResponse.json();
-    console.log('📋 Full Dispute API Response:', JSON.stringify(disputeData, null, 2));
-    console.log('📋 disputeData.has_active_dispute type:', typeof disputeData.has_active_dispute);
-    console.log('📋 disputeData.has_active_dispute value:', disputeData.has_active_dispute);
-    
-    // ✅ CRITICAL: Set the state
-    const disputeActive = disputeData.has_active_dispute === true;
-    console.log('⚙️ Computed disputeActive:', disputeActive);
-    console.log('⚙️ Calling setHasActiveDispute with:', disputeActive);
-    
-    setHasActiveDispute(disputeActive);
-    
-    // Verify it was set
-    console.log('✅ setHasActiveDispute called successfully');
-    
-    if (disputeActive) {
-      console.log('🚨 ACTIVE DISPUTE DETECTED! 🚨');
-      console.log('   - Dispute ID:', disputeData.dispute_id);
-      console.log('   - Reason:', disputeData.reason);
-      console.log('   - Status:', disputeData.status);
-      console.log('   - 🔴 Buttons should now be DISABLED');
-    } else {
-      console.log('✅ No active dispute detected');
-      console.log('   - 🟢 Buttons should be ENABLED');
+    if (disputeResponse.ok) {
+      const disputeData = await disputeResponse.json();
+      console.log('⚖️ Dispute data:', disputeData);
+      setHasActiveDispute(disputeData.has_active_dispute === true);
     }
     
   } catch (error) {
-    console.error('❌ EXCEPTION in fetchProjectDetails:', error);
-    console.error('   Error name:', error.name);
-    console.error('   Error message:', error.message);
-    console.error('   Error stack:', error.stack);
-    console.log('⚠️ Setting hasActiveDispute to false (safe default after error)');
-    setHasActiveDispute(false); // Safe default
+    console.error('❌ Error in fetchProjectDetails:', error);
   }
     };
 
