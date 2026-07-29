@@ -1246,7 +1246,7 @@ const loadRepoStructure = async () => {
   setShowReviewModal(true);
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/github/repo-structure`, {
+    const response = await fetch(`${BACKEND_URL}/api/v1/github/repo-structure`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
