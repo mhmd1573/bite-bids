@@ -1036,24 +1036,7 @@ const handleUpdateProject = async (e) => {
                     <span className="stat-highlight">{(stats.developers || 0)}</span> developers, <span className="stat-highlight">{(stats.investors || 0)}</span> investors
                   </div>
                 </div>
-                {/* <div className="stat-trend stat-trend-up">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>Active</span>
-                </div> */}
               </div>
-
-              {/* <div className="admin-stat-card stat-card-success">
-                <div className="stat-icon">
-                  <DollarSign className="w-6 h-6" />
-                </div>
-                <div className="stat-content">
-                  <div className="stat-label">Total Revenue</div>
-                  <div className="stat-value">${((stats.totalRevenue || 0) / 1000).toFixed(1)}K</div>
-                  <div className="stat-detail">
-                    <span className="stat-highlight">{(stats.completedTransactions || 0)}</span> transactions
-                  </div>
-                </div>
-              </div> */}
 
               <div className="admin-stat-card stat-card-success">
                 <div className="stat-icon">
