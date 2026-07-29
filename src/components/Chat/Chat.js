@@ -1545,7 +1545,7 @@ const renderFileTree = (items, parentPath = '') => {
 
       console.log('📤 Sending dispute request:', requestBody);
 
-      const response = await fetch(`${BACKEND_URL}/api/disputes/projects/${projectData.id}/dispute/create`, {
+      const response = await fetch(`${BACKEND_URL}/api/disputes/projects/${projectData.id}/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
