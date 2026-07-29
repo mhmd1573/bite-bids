@@ -907,3 +907,69 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
+
+
+
+/* ✅ Pending Revenue in Stat Card */
+.stat-pending-revenue {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #f59e0b;
+  background: #fffbeb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+}
+
+.stat-pending-revenue svg {
+  color: #f59e0b;
+}
+
+/* ✅ Revenue Breakdown */
+.stat-revenue-breakdown {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.stat-revenue-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  background: #f8fafc;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.stat-revenue-item .stat-revenue-label {
+  color: #64748b;
+}
+
+.stat-revenue-item .stat-revenue-value {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.stat-revenue-pending {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.stat-revenue-pending .stat-revenue-value {
+  color: #d97706;
+}
+
+.stat-revenue-volume {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.stat-revenue-volume .stat-revenue-value {
+  color: #1d4ed8;
+}

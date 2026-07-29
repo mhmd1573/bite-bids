@@ -58,13 +58,9 @@ const [isCloudViewMode, setIsCloudViewMode] = useState(false);
   const reconnectTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Add this state with your other states at the top of the Chat component:
-const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-const [isFullscreen, setIsFullscreen] = useState(false);
-// ✅ NEW: Private Repository States (COMMENTED OUT - GitHub flow disabled)
-// const [accessToken, setAccessToken] = useState('');
-// const [showPrivateRepoWarning, setShowPrivateRepoWarning] = useState(false);
-// const [isPrivateRepo, setIsPrivateRepo] = useState(false);
+    // Add this state with your other states at the top of the Chat component:
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
 // ✅ NEW: Project Upload States (Direct Upload to R2)
 const [uploadMethod, setUploadMethod] = useState(null); // 'github' or 'upload'
@@ -154,45 +150,34 @@ const getLanguage = (filename) => {
     };
   }, [showEmojiPicker]);
 
-  // Fetch room data and initial messages
-  // useEffect(() => {
-  //   if (!roomId) return;
-
-  //   fetchRoomData();
-  //   fetchMessages();
-  //   fetchProjectDetails();
-  //   // fetchGithubRepo(); // ✅ COMMENTED OUT: GitHub flow disabled
-  //   fetchProjectUpload(); // ✅ NEW: Fetch uploaded project info
-  //   fetchPendingPayout(); // ✅ NEW: Fetch pending payout for developer
-  // }, [roomId]);
 
   // ✅ UPDATED: Load all data on component mount
-useEffect(() => {
-  if (!roomId) return;
+  useEffect(() => {
+    if (!roomId) return;
 
-  const loadAllData = async () => {
-    console.log('🔄 Loading chat data for room:', roomId);
+    const loadAllData = async () => {
+      console.log('🔄 Loading chat data for room:', roomId);
+      
+      // Load messages
+      await fetchMessages();
+      
+      // Load room data
+      await fetchRoomData();
+      
+      // Load project details (without payout status)
+      await fetchProjectDetails();
+      
+      // Load upload info
+      await fetchProjectUpload();
+      
+      // ✅ CRITICAL: Check payout status LAST (source of truth)
+      await checkPayoutStatus();
+      
+      console.log('✅ All data loaded');
+    };
     
-    // Load messages
-    await fetchMessages();
-    
-    // Load room data
-    await fetchRoomData();
-    
-    // Load project details (without payout status)
-    await fetchProjectDetails();
-    
-    // Load upload info
-    await fetchProjectUpload();
-    
-    // ✅ CRITICAL: Check payout status LAST (source of truth)
-    await checkPayoutStatus();
-    
-    console.log('✅ All data loaded');
-  };
-  
-  loadAllData();
-}, [roomId]);
+    loadAllData();
+  }, [roomId]);
 
 // Remove the old useEffect that called fetchPendingPayout separately
 
@@ -427,7 +412,6 @@ useEffect(() => {
     }
   };
 
-
   const fetchMessages = async () => {
       try {
         const response = await fetch(`${BACKEND_URL}/api/chat/rooms/${roomId}/messages`, {
@@ -455,109 +439,11 @@ useEffect(() => {
       }
     };
 
-  //   const fetchProjectDetails = async () => {
-  // console.log('🔍 fetchProjectDetails called for roomId:', roomId);
-  
-  // try {
-  //   // Step 1: Get room data
-  //   const roomUrl = `${BACKEND_URL}/api/chat/rooms/${roomId}`;
-  //   const response = await fetch(roomUrl, {
-  //     headers: {
-  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
-  //     }
-  //   });
-    
-  //   if (!response.ok) {
-  //     console.error('❌ Failed to fetch room data');
-  //     return;
-  //   }
-    
-  //   const room = await response.json();
-  //   console.log('✅ Room data received:', room);
-    
-  //   // Step 2: Get project details
-  //   const projectUrl = `${BACKEND_URL}/api/projects/${room.project_id}`;
-  //   const projectResponse = await fetch(projectUrl, {
-  //     headers: {
-  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
-  //     }
-  //   });
-    
-  //   if (!projectResponse.ok) {
-  //     console.error('❌ Failed to fetch project');
-  //     return;
-  //   }
-    
-  //   const project = await projectResponse.json();
-  //   console.log('✅ Project data received:', project);
-  //   setProjectData(project);
-    
-  //   // ✅ NEW: Check if project is completed - this persists across refreshes
-  //   const isCompleted = project.status === 'completed';
-  //   console.log('📊 Project status:', project.status, 'isCompleted:', isCompleted);
-    
-  //   // ✅ NEW: Check if there's a pending payout (which means investor confirmed)
-  //   const payoutUrl = `${BACKEND_URL}/api/chat/rooms/${roomId}/pending-payout`;
-  //   const payoutResponse = await fetch(payoutUrl, {
-  //     headers: {
-  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
-  //     }
-  //   });
-    
-  //   if (payoutResponse.ok) {
-  //     const payoutData = await payoutResponse.json();
-  //     console.log('💰 Payout data:', payoutData);
-      
-  //     // If there's a pending payout OR project is completed, show download button
-  //     // This handles both: just confirmed and refreshed page
-  //     const hasPayout = payoutData?.has_pending_payout === true;
-  //     const isPayoutCompleted = payoutData?.payout?.status === 'completed';
-      
-  //     // Show download button if:
-  //     // 1. Project is completed (status from DB)
-  //     // 2. OR there's a pending payout (means investor confirmed)
-  //     // 3. OR payout is completed (payment processed)
-  //     const shouldShowDownload = isCompleted || hasPayout || isPayoutCompleted;
-      
-  //     console.log('🔘 Should show download button:', shouldShowDownload);
-  //     setHasConfirmedProject(shouldShowDownload);
-      
-  //     // Also store the payout data
-  //     if (payoutData?.payout) {
-  //       setPendingPayout(payoutData);
-  //     }
-  //   } else {
-  //     // If no payout endpoint, fallback to project status
-  //     console.log('⚠️ No payout data, using project status');
-  //     setHasConfirmedProject(isCompleted);
-  //   }
-
-  //   // Step 3: Check for active dispute
-  //   const disputeUrl = `${BACKEND_URL}/api/disputes/chat/rooms/${roomId}/has-active-dispute`;
-  //   const disputeResponse = await fetch(disputeUrl, {
-  //     headers: {
-  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
-  //     }
-  //   });
-    
-  //   if (disputeResponse.ok) {
-  //     const disputeData = await disputeResponse.json();
-  //     console.log('⚖️ Dispute data:', disputeData);
-  //     setHasActiveDispute(disputeData.has_active_dispute === true);
-  //   }
-    
-  // } catch (error) {
-  //   console.error('❌ Error in fetchProjectDetails:', error);
-  // }
-  //   };
-
-
-
 
   // ✅ Also add a useEffect to log when hasActiveDispute changes
-useEffect(() => {
-  console.log('🔄 hasActiveDispute state changed to:', hasActiveDispute);
-}, [hasActiveDispute]);
+  useEffect(() => {
+    console.log('🔄 hasActiveDispute state changed to:', hasActiveDispute);
+  }, [hasActiveDispute]);
 
 
 
@@ -672,34 +558,7 @@ const fetchPendingPayout = async () => {
   await checkPayoutStatus();
 };
 
-
-  // ✅ NEW: Fetch pending payout for developer
-  // const fetchPendingPayout = async () => {
-  //   try {
-  //     const response = await fetch(`${BACKEND_URL}/api/chat/rooms/${roomId}/pending-payout`, {
-  //       headers: {
-  //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-  //       }
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setPendingPayout(data);
-
-  //       // ✅ If payout exists, it means investor has confirmed
-  //       if (data?.has_pending_payout) {
-  //         setHasConfirmedProject(true);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching pending payout:', error);
-  //   }
-  // };
-
-
-
-
-  // ✅ UPDATED: Submit GitHub repository URL (now supports private repos)
+// ✅ UPDATED: Submit GitHub repository URL (now supports private repos)
 const handleSubmitRepo = async (e) => {
   e.preventDefault();
   
@@ -1017,7 +876,7 @@ const handleDownloadUploadedProject = async () => {
 };
 
   // ✅ NEW: Load file content - from GitHub OR from R2 cloud storage
-  const loadFileContent = async (filePath) => {
+const loadFileContent = async (filePath) => {
     setLoadingFile(true);
     setSelectedFile(filePath);
 
@@ -1072,7 +931,7 @@ const handleDownloadUploadedProject = async () => {
   };
 
   // ✅ NEW: Toggle folder expansion
-  const toggleFolder = (path) => {
+const toggleFolder = (path) => {
     setExpandedFolders(prev => {
       const newSet = new Set(prev);
       if (newSet.has(path)) {
@@ -1116,7 +975,7 @@ const handleDownloadUploadedProject = async () => {
   
   // Combine folders and files
   return [...folderMap.values(), ...files];
-};
+  };
 
 // Then update loadRepoStructure:
 const loadRepoStructure = async () => {
@@ -1621,42 +1480,6 @@ const renderFileTree = (items, parentPath = '') => {
     xhr.send();
   };
 
-  // const handleConfirmProject = async () => {
-  //   if (!projectData) return;
-
-  //   setConfirming(true);
-
-  //   try {
-  //     const response = await fetch(`${BACKEND_URL}/api/projects/${projectData.id}/simple-approve`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-
-  //     if (response.ok) {
-  //       showNotification(
-  //         'success',
-  //         'Project Confirmed',
-  //         'Payment has been released to the developer. You can now download the project.'
-  //       );
-  //       setShowConfirmModal(false);
-  //       setHasConfirmedProject(true); // ✅ Enable download button
-  //       fetchProjectDetails();
-  //     } else {
-  //       const error = await response.json();
-  //       showNotification('error', 'Confirmation Failed', error.detail || 'Failed to confirm project.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error confirming project:', error);
-  //     showNotification('error', 'Confirmation Failed', 'Failed to confirm project.');
-  //   } finally {
-  //     setConfirming(false);
-  //   }
-  // };
-
- 
  const handleConfirmProject = async () => {
   if (!projectData) return;
 
@@ -1696,7 +1519,7 @@ const renderFileTree = (items, parentPath = '') => {
   } finally {
     setConfirming(false);
   }
-};
+  };
  
   const handleOpenDispute = async (e) => {
     e.preventDefault();
@@ -1788,57 +1611,6 @@ const renderFileTree = (items, parentPath = '') => {
     return null;
   }
 
-//   const isDeveloper = roomData.developer_id === currentUser.id;
-  
-//   const canConfirmOrDispute = !isDeveloper && projectData && (
-//     projectData.status === 'in_progress' || 
-//     projectData.status === 'fixed_price' ||
-//     projectData.status === 'disputed'
-//   );
-
-//   // Both developer and investor can open disputes
-//   const canOpenDispute = projectData && (
-//   projectData.status === 'in_progress' || 
-//   projectData.status === 'fixed_price'
-// ) && !hasActiveDispute;  // ✅ NEW: Disable if active dispute exists
-
-
-//   const hasUploadedProject = !!projectUpload;
-
-//   // ✅ Check if payout exists (source of truth)
-//   const hasPayoutRecord = pendingPayout !== null && pendingPayout !== undefined;
-//   const isPayoutActive = hasPayoutRecord && 
-//                         ['pending', 'processing', 'completed'].includes(pendingPayout?.status);
-
-
-//   // Developer can upload project directly to cloud
-//   const canSubmitRepo = isDeveloper && !hasUploadedProject;
-
-
-//   // Investor can view the uploaded project directly from cloud storage
-//   const canCloudView = !isDeveloper && hasUploadedProject;
-//   // Download button visibility:
-//   // - Developer: can download when upload exists
-//   // - Investor: can only download AFTER confirming the project
-//   const canDownloadProject = hasUploadedProject && (isDeveloper || hasConfirmedProject);
-//   // Project delivery complete when upload exists
-//   const projectDeliveryComplete = hasUploadedProject;
-
-//   // Debug logging
-//   console.log('🔍 Button Visibility Debug:', {
-//     currentUserId: currentUser?.id,
-//     developerIdFromRoom: roomData?.developer_id,
-//     isDeveloper,
-//     projectStatus: projectData?.status,
-//     canConfirmOrDispute,
-//     canOpenDispute,
-//     canSubmitRepo,
-//     canCloudView,
-//     canDownloadProject,
-//     hasUploadedProject,
-//     projectDeliveryComplete
-//   });
-
 
 const isDeveloper = roomData.developer_id === currentUser.id;
 const hasUploadedProject = !!projectUpload;
@@ -1909,6 +1681,7 @@ console.log('🔍 Button Visibility Debug:', {
 
   return (
     <div className="chat-container">
+      
       {/* Chat Header */}
       <div className="chat-header">
         <div className="chat-header-user">

@@ -251,9 +251,11 @@ const locationOptions = [
         activeProjects: apiStats.projects?.active || 0,
         totalDisputes: apiStats.disputes?.total || 0,
         activeDisputes: apiStats.disputes?.active || 0,
-        totalRevenue: apiStats.payments?.total_revenue || 0,
-        pendingPayments: apiStats.payments?.pending_payments || 0,
+        totalRevenue: apiStats.payments?.total_revenue || 0,        // ✅ Earned revenue
+        pendingRevenue: apiStats.payments?.pending_revenue || 0,    // ✅ Pending revenue
+        totalVolume: apiStats.payments?.total_volume || 0,          // ✅ Total volume
         completedTransactions: apiStats.payments?.completed_transactions || 0,
+        pendingPayments: apiStats.payments?.pending_payments || 0,
       });
 
       const recentUsersData = Array.isArray(dashboardData.recent_activity?.users)
@@ -1040,7 +1042,7 @@ const handleUpdateProject = async (e) => {
                 </div> */}
               </div>
 
-              <div className="admin-stat-card stat-card-success">
+              {/* <div className="admin-stat-card stat-card-success">
                 <div className="stat-icon">
                   <DollarSign className="w-6 h-6" />
                 </div>
@@ -1051,10 +1053,40 @@ const handleUpdateProject = async (e) => {
                     <span className="stat-highlight">{(stats.completedTransactions || 0)}</span> transactions
                   </div>
                 </div>
-                {/* <div className="stat-trend stat-trend-up">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>{stats.pendingPayments || 0} pending</span>
-                </div> */}
+              </div> */}
+
+              <div className="admin-stat-card stat-card-success">
+                <div className="stat-icon">
+                  <DollarSign className="w-6 h-6" />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Revenue</div>
+                  <div className="stat-value">${((stats.totalRevenue || 0) / 1000).toFixed(1)}K</div>
+                  <div className="stat-detail">
+                    <span className="stat-highlight">{(stats.completedTransactions || 0)}</span> completed
+                  </div>
+                  {/* ✅ NEW: Revenue Breakdown */}
+                  <div className="stat-revenue-breakdown">
+                    
+                    <div className="stat-revenue-item">
+                      <span className="stat-revenue-label">Earned</span>
+                      <span className="stat-revenue-value">${(stats.totalRevenue || 0).toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="stat-revenue-item stat-revenue-pending">
+                      <Clock className="w-3 h-3" />
+                      <span className="stat-revenue-label">Pending</span>
+                      <span className="stat-revenue-value">${(stats.pendingRevenue || 0).toFixed(2)}</span>
+                    </div>
+
+                    <div className="stat-revenue-item stat-revenue-volume">
+                      <TrendingUp className="w-3 h-3" />
+                      <span className="stat-revenue-label">Volume</span>
+                      <span className="stat-revenue-value">${(stats.totalVolume || 0).toFixed(2)}</span>
+                    </div>
+
+                  </div>
+                </div>
               </div>
 
               <div className="admin-stat-card stat-card-warning">
