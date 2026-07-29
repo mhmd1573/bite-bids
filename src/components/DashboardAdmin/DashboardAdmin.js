@@ -1061,7 +1061,7 @@ const handleUpdateProject = async (e) => {
                 </div>
                 <div className="stat-content">
                   <div className="stat-label">Revenue</div>
-                  <div className="stat-value">${((stats.totalRevenue || 0) / 1000).toFixed(1)}K</div>
+                  <div className="stat-value">${((stats.totalRevenue || 0) / 1000).toFixed(5)}K</div>
                   <div className="stat-detail">
                     <span className="stat-highlight">{(stats.completedTransactions || 0)}</span> completed
                   </div>
