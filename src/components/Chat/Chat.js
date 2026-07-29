@@ -467,21 +467,27 @@ const checkPayoutStatus = async () => {
       const data = await response.json();
       console.log('💰 Payout data:', data);
       
-      setPendingPayout(data.payout);
+      // ✅ Check if the payout belongs to the current investor
+      const payout = data.payout;
+      const currentUserId = currentUser?.id;
       
-      // ✅ KEY LOGIC: If payout exists, project has been confirmed
-      const hasPayout = data.has_pending_payout === true;
-      const hasPayoutRecord = data.payout !== null && data.payout !== undefined;
+      // Only consider this payout if it belongs to the current investor
+      const belongsToCurrentUser = payout && payout.investor_id === currentUserId;
       
-      // Check if payout status is one of the "active" statuses
+      setPendingPayout(payout);
+      
+      const hasPayout = data.has_pending_payout === true && belongsToCurrentUser;
+      const hasPayoutRecord = payout !== null && payout !== undefined && belongsToCurrentUser;
       const payoutExists = hasPayoutRecord && 
-                         ['pending', 'processing', 'completed'].includes(data.payout?.status);
+                         ['pending', 'processing', 'completed'].includes(payout?.status);
       
       const isConfirmed = hasPayout || payoutExists;
+      
+      // ✅ Only set hasConfirmedProject if the payout belongs to this investor
       setHasConfirmedProject(isConfirmed);
       
-      console.log(`📊 Payout exists: ${isConfirmed}, status: ${data.payout?.status || 'none'}`);
-      console.log(`🔘 Download button should show: ${isConfirmed}`);
+      console.log(`📊 Payout exists for current investor: ${isConfirmed}, status: ${payout?.status || 'none'}`);
+      console.log(`📊 Payout belongs to current user: ${belongsToCurrentUser}`);
       
       return isConfirmed;
     } else {
@@ -1480,47 +1486,92 @@ const renderFileTree = (items, parentPath = '') => {
     xhr.send();
   };
 
- const handleConfirmProject = async () => {
-  if (!projectData) return;
+//  const handleConfirmProject = async () => {
+//   if (!projectData) return;
 
-  setConfirming(true);
+//   setConfirming(true);
 
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/projects/${projectData.id}/simple-approve`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+//   try {
+//     const response = await fetch(`${BACKEND_URL}/api/projects/${projectData.id}/simple-approve`, {
+//       method: 'POST',
+//       headers: {
+//         'Authorization': `Bearer ${localStorage.getItem('token')}`,
+//         'Content-Type': 'application/json'
+//       }
+//     });
+
+//     if (response.ok) {
+//       showNotification(
+//         'success',
+//         'Project Confirmed',
+//         'Payment has been released to the developer. You can now download the project.'
+//       );
+//       setShowConfirmModal(false);
+      
+//       // ✅ IMPORTANT: Check payout status immediately after confirmation
+//       await checkPayoutStatus(); // This will set hasConfirmedProject = true
+      
+//       // Refresh other data
+//       await fetchProjectDetails();
+//       await fetchProjectUpload();
+      
+//     } else {
+//       const error = await response.json();
+//       showNotification('error', 'Confirmation Failed', error.detail || 'Failed to confirm project.');
+//     }
+//   } catch (error) {
+//     console.error('Error confirming project:', error);
+//     showNotification('error', 'Confirmation Failed', 'Failed to confirm project.');
+//   } finally {
+//     setConfirming(false);
+//   }
+//   };
+
+  const handleConfirmProject = async () => {
+    if (!projectData) return;
+
+    setConfirming(true);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/projects/${projectData.id}/simple-approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          // ✅ Include the current investor ID
+          investor_id: currentUser?.id
+        })
+      });
+
+      if (response.ok) {
+        showNotification(
+          'success',
+          'Project Confirmed',
+          'Payment has been released to the developer. You can now download the project.'
+        );
+        setShowConfirmModal(false);
+        
+        // ✅ IMPORTANT: Check payout status immediately after confirmation
+        await checkPayoutStatus(); // This will set hasConfirmedProject = true for THIS investor
+        
+        // Refresh other data
+        await fetchProjectDetails();
+        await fetchProjectUpload();
+        
+      } else {
+        const error = await response.json();
+        showNotification('error', 'Confirmation Failed', error.detail || 'Failed to confirm project.');
       }
-    });
-
-    if (response.ok) {
-      showNotification(
-        'success',
-        'Project Confirmed',
-        'Payment has been released to the developer. You can now download the project.'
-      );
-      setShowConfirmModal(false);
-      
-      // ✅ IMPORTANT: Check payout status immediately after confirmation
-      await checkPayoutStatus(); // This will set hasConfirmedProject = true
-      
-      // Refresh other data
-      await fetchProjectDetails();
-      await fetchProjectUpload();
-      
-    } else {
-      const error = await response.json();
-      showNotification('error', 'Confirmation Failed', error.detail || 'Failed to confirm project.');
+    } catch (error) {
+      console.error('Error confirming project:', error);
+      showNotification('error', 'Confirmation Failed', 'Failed to confirm project.');
+    } finally {
+      setConfirming(false);
     }
-  } catch (error) {
-    console.error('Error confirming project:', error);
-    showNotification('error', 'Confirmation Failed', 'Failed to confirm project.');
-  } finally {
-    setConfirming(false);
-  }
   };
- 
+
   const handleOpenDispute = async (e) => {
     e.preventDefault();
     if (!projectData || !disputeReason) return;
@@ -1615,12 +1666,16 @@ const renderFileTree = (items, parentPath = '') => {
 const isDeveloper = roomData.developer_id === currentUser.id;
 const hasUploadedProject = !!projectUpload;
 
-// ✅ Check if payout exists (source of truth)
-const hasPayoutRecord = pendingPayout !== null && pendingPayout !== undefined;
-const isPayoutActive = hasPayoutRecord && 
+    // ✅ Check if payout exists (source of truth)
+    const hasPayoutRecord = pendingPayout !== null && 
+                            pendingPayout !== undefined && 
+                            pendingPayout?.investor_id === currentUser?.id;
+
+    const isPayoutActive = hasPayoutRecord && 
                        ['pending', 'processing', 'completed'].includes(pendingPayout?.status);
 
-// ✅ Confirm button visibility - based on payout record
+
+// ✅ Confirm button visibility - based on THIS investor's payout
 const canShowConfirmButton = (() => {
   // Only investors can confirm
   if (isDeveloper) return false;
@@ -1628,12 +1683,13 @@ const canShowConfirmButton = (() => {
   // Must have project data
   if (!projectData) return false;
   
-  // ✅ If payout already exists, don't show confirm button
+  // ✅ Only hide if THIS investor has a payout
   if (hasPayoutRecord || isPayoutActive || hasConfirmedProject) return false;
   
   // Can confirm if project is in progress or fixed_price
   return ['in_progress', 'fixed_price'].includes(projectData.status) && !hasActiveDispute;
 })();
+
 
 // Both developer and investor can open disputes
 const canOpenDispute = projectData && (
@@ -1648,13 +1704,10 @@ const canCloudView = !isDeveloper && hasUploadedProject;
 
 // ✅ Download button visibility - based on payout record
 const canDownloadProject = (() => {
-  // Must have uploaded project
   if (!hasUploadedProject) return false;
-  
-  // Developer can always download their own upload
   if (isDeveloper) return true;
   
-  // ✅ For investor: check if payout exists
+  // Investor can download if THEY have a payout
   return hasPayoutRecord || isPayoutActive || hasConfirmedProject;
 })();
 
