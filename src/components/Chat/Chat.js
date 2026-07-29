@@ -40,18 +40,15 @@ const Chat = ({ roomId, currentUser, projectTitle }) => {
   const [disputeReason, setDisputeReason] = useState('');
   const [disputeNotes, setDisputeNotes] = useState('');
   
-// ✅ NEW: GitHub Repository Review States
+// ✅ NEW: Review Modal States (Cloud View only - GitHub removed)
 const [showReviewModal, setShowReviewModal] = useState(false);
-const [githubRepo, setGithubRepo] = useState(null);
 const [repoFiles, setRepoFiles] = useState(null);
 const [selectedFile, setSelectedFile] = useState(null);
 const [fileContent, setFileContent] = useState('');
 const [loadingFile, setLoadingFile] = useState(false);
 const [expandedFolders, setExpandedFolders] = useState(new Set());
 const [showSubmitRepoModal, setShowSubmitRepoModal] = useState(false);
-const [repoUrl, setRepoUrl] = useState('');
-const [submittingRepo, setSubmittingRepo] = useState(false);
-// ✅ NEW: Track whether we're in "Cloud View" mode (reading from R2) or GitHub mode
+// ✅ NEW: Track whether we're in "Cloud View" mode (reading from R2)
 const [isCloudViewMode, setIsCloudViewMode] = useState(false);
   
   const wsRef = useRef(null);
@@ -64,16 +61,15 @@ const [isCloudViewMode, setIsCloudViewMode] = useState(false);
   // Add this state with your other states at the top of the Chat component:
 const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 const [isFullscreen, setIsFullscreen] = useState(false);
-// ✅ NEW: Private Repository States
-const [accessToken, setAccessToken] = useState('');
-const [showPrivateRepoWarning, setShowPrivateRepoWarning] = useState(false);
-const [isPrivateRepo, setIsPrivateRepo] = useState(false);
+// ✅ NEW: Private Repository States (COMMENTED OUT - GitHub flow disabled)
+// const [accessToken, setAccessToken] = useState('');
+// const [showPrivateRepoWarning, setShowPrivateRepoWarning] = useState(false);
+// const [isPrivateRepo, setIsPrivateRepo] = useState(false);
 
 // ✅ NEW: Project Upload States (Direct Upload to R2)
 const [uploadMethod, setUploadMethod] = useState(null); // 'github' or 'upload'
 const [uploadingProject, setUploadingProject] = useState(false);
 const [projectUpload, setProjectUpload] = useState(null); // Uploaded project info
-const folderInputRef = useRef(null);
 const zipFileInputRef = useRef(null);
 
 // ✅ Add this new state at the top of Chat component (around line 35)
@@ -165,7 +161,7 @@ const getLanguage = (filename) => {
     fetchRoomData();
     fetchMessages();
     fetchProjectDetails();
-    fetchGithubRepo(); // ✅ NEW: Fetch GitHub repository
+    // fetchGithubRepo(); // ✅ COMMENTED OUT: GitHub flow disabled
     fetchProjectUpload(); // ✅ NEW: Fetch uploaded project info
     fetchPendingPayout(); // ✅ NEW: Fetch pending payout for developer
   }, [roomId]);
@@ -627,23 +623,8 @@ useEffect(() => {
 }, [hasActiveDispute]);
 
 
-  // ✅ NEW: Fetch GitHub repository link
-  const fetchGithubRepo = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/github/chat/rooms/${roomId}/github-repo`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGithubRepo(data);
-      }
-    } catch (error) {
-      console.error('Error fetching GitHub repo:', error);
-    }
-  };
+  // ✅ COMMENTED OUT: GitHub repo fetching disabled
+  // const fetchGithubRepo = async () => { ... };
 
   // ✅ NEW: Fetch pending payout for developer
   const fetchPendingPayout = async () => {
@@ -738,178 +719,7 @@ const handleSubmitRepo = async (e) => {
   }
 };
 
-// ✅ NEW: Generate file tree structure from FileList
-const generateFileTree = (files) => {
-  const tree = { name: 'root', type: 'folder', children: [] };
-
-  Array.from(files).forEach(file => {
-    const pathParts = file.webkitRelativePath.split('/');
-    let currentLevel = tree;
-
-    pathParts.forEach((part, index) => {
-      const isFile = index === pathParts.length - 1;
-      let existing = currentLevel.children.find(child => child.name === part);
-
-      if (!existing) {
-        existing = {
-          name: part,
-          type: isFile ? 'file' : 'folder',
-          ...(isFile ? { size: file.size } : { children: [] })
-        };
-        currentLevel.children.push(existing);
-      }
-
-      if (!isFile) {
-        currentLevel = existing;
-      }
-    });
-  });
-
-  // Sort: folders first, then files, alphabetically
-  const sortTree = (node) => {
-    if (node.children) {
-      node.children.sort((a, b) => {
-        if (a.type === 'folder' && b.type !== 'folder') return -1;
-        if (a.type !== 'folder' && b.type === 'folder') return 1;
-        return a.name.localeCompare(b.name);
-      });
-      node.children.forEach(sortTree);
-    }
-  };
-  sortTree(tree);
-
-  return tree.children.length === 1 ? tree.children[0] : tree;
-};
-
-// ✅ NEW: Handle folder selection for upload
-const handleFolderSelect = async (e) => {
-  const files = e.target.files;
-  if (!files || files.length === 0) return;
-
-  // Generate file tree
-  const fileTree = generateFileTree(files);
-
-  // Calculate total size
-  const totalSize = Array.from(files).reduce((sum, f) => sum + f.size, 0);
-
-  // Check size limit (5GB)
-  const maxSize = 5 * 1024 * 1024 * 1024;
-  if (totalSize > maxSize) {
-    showNotification('error', 'File Too Large', 'Total project size must be under 5GB.');
-    return;
-  }
-
-  setUploadingProject(true);
-  setUploadProgress(0);
-
-  try {
-    // Create a ZIP file from the selected folder
-    const JSZip = (await import('jszip')).default;
-    const zip = new JSZip();
-
-    // Add all files to ZIP
-    for (const file of files) {
-      const content = await file.arrayBuffer();
-      zip.file(file.webkitRelativePath, content);
-    }
-
-    // Generate ZIP blob
-    const zipBlob = await zip.generateAsync(
-      { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
-      (metadata) => {
-        setUploadProgress(Math.round(metadata.percent * 0.3)); // 0-30% for zipping
-      }
-    );
-
-    const zipFileName = `${fileTree.name || 'project'}.zip`;
-
-    // Get presigned upload URL
-    const presignedResponse = await fetch(`${BACKEND_URL}/api/upload/presigned-url/${roomId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        file_name: zipFileName,
-        file_size: zipBlob.size,
-        content_type: 'application/zip'
-      })
-    });
-
-    if (!presignedResponse.ok) {
-      const error = await presignedResponse.json();
-      throw new Error(error.detail || 'Failed to get upload URL');
-    }
-
-    const { presigned_url, file_key } = await presignedResponse.json();
-
-    // Upload to R2 using XMLHttpRequest for progress tracking
-    await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const uploadPercent = Math.round((event.loaded / event.total) * 70);
-          setUploadProgress(30 + uploadPercent); // 30-100% for upload
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
-        } else {
-          reject(new Error('Upload failed'));
-        }
-      };
-
-      xhr.onerror = () => reject(new Error('Upload failed'));
-
-      xhr.open('PUT', presigned_url);
-      xhr.setRequestHeader('Content-Type', 'application/zip');
-      xhr.send(zipBlob);
-    });
-
-    // Complete upload by saving metadata
-    const completeResponse = await fetch(`${BACKEND_URL}/api/upload/complete/${roomId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        file_key: file_key,
-        file_name: zipFileName,
-        file_size: zipBlob.size,
-        file_tree: fileTree
-      })
-    });
-
-    if (!completeResponse.ok) {
-      throw new Error('Failed to complete upload');
-    }
-
-    setUploadProgress(100);
-    showNotification('success', 'Upload Complete', 'Project uploaded successfully!');
-    setShowSubmitRepoModal(false);
-    setUploadMethod(null);
-
-    // Refresh to show the uploaded project
-    fetchProjectUpload();
-
-  } catch (error) {
-    console.error('Upload error:', error);
-    showNotification('error', 'Upload Failed', error.message || 'Failed to upload project.');
-  } finally {
-    setUploadingProject(false);
-    setUploadProgress(0);
-    if (folderInputRef.current) {
-      folderInputRef.current.value = '';
-    }
-  }
-};
-
-// ✅ NEW: Handle ZIP file upload (existing ZIP file)
+// ✅ NEW: Handle ZIP file upload
 const handleZipFileSelect = async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -1904,21 +1714,19 @@ const renderFileTree = (items, parentPath = '') => {
 
 
   // Check which type of project delivery is available
-  const hasGithubRepo = githubRepo && githubRepo.repo_url;
+  // const hasGithubRepo = githubRepo && githubRepo.repo_url; // COMMENTED OUT: GitHub disabled
   const hasUploadedProject = !!projectUpload;
 
-  // Developer can submit if they haven't completed BOTH steps (GitHub + Upload required)
-  const canSubmitRepo = isDeveloper && (!hasGithubRepo || !hasUploadedProject);
-  // Project can be reviewed only when BOTH GitHub repo AND upload exist
-  const canReviewProject = hasGithubRepo && hasUploadedProject;
-  // ✅ NEW: Investor can view the uploaded project directly from cloud storage
+  // Developer can upload project directly to cloud (no GitHub needed)
+  const canSubmitRepo = isDeveloper && !hasUploadedProject;
+  // Investor can view the uploaded project directly from cloud storage
   const canCloudView = !isDeveloper && hasUploadedProject;
   // Download button visibility:
   // - Developer: can download when upload exists
   // - Investor: can only download AFTER confirming the project
   const canDownloadProject = hasUploadedProject && (isDeveloper || hasConfirmedProject);
-  // Both steps completed - project delivery is ready
-  const projectDeliveryComplete = hasGithubRepo && hasUploadedProject;
+  // Project delivery complete when upload exists
+  const projectDeliveryComplete = hasUploadedProject;
 
   // Debug logging
   console.log('🔍 Button Visibility Debug:', {
@@ -1929,10 +1737,8 @@ const renderFileTree = (items, parentPath = '') => {
     canConfirmOrDispute,
     canOpenDispute,
     canSubmitRepo,
-    canReviewProject,
     canCloudView,
     canDownloadProject,
-    hasGithubRepo,
     hasUploadedProject,
     projectDeliveryComplete
   });
@@ -1974,44 +1780,19 @@ const renderFileTree = (items, parentPath = '') => {
             </button>
           )}
 
-          {/* ✅ NEW: Developer Submit Project Button (Both GitHub + Upload required) */}
+          {/* ✅ NEW: Developer Upload Project Button (Direct to Cloud) */}
           {canSubmitRepo && (
             <button
               className="chat-action-btn upload-project-btn"
               onClick={() => setShowSubmitRepoModal(true)}
-              title={!hasGithubRepo ? "Submit GitHub repository" : "Upload project files"}
+              title="Upload project files to cloud"
             >
-              <FolderTree size={18} />
-              <span>
-                {!hasGithubRepo && !hasUploadedProject
-                  ? 'Deliver Project'
-                  : !hasGithubRepo
-                    ? 'Add GitHub Repo'
-                    : 'Upload Project'}
-              </span>
+              <Upload size={18} />
+              <span>Upload Project</span>
             </button>
           )}
 
-          {/* Show delivery status badge when partially complete */}
-          {isDeveloper && (hasGithubRepo || hasUploadedProject) && !projectDeliveryComplete && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 0.75rem',
-              background: '#fef3c7',
-              borderRadius: '8px',
-              fontSize: '0.8rem',
-              color: '#92400e'
-            }}>
-              <AlertCircle size={14} />
-              <span>
-                {hasGithubRepo ? 'Upload pending' : 'GitHub repo pending'}
-              </span>
-            </div>
-          )}
-
-          {/* Show completion badge when both steps done */}
+          {/* Show completion badge when upload exists */}
           {isDeveloper && projectDeliveryComplete && (
             <div className="project-delivered-badge">
               <CheckCircle2 size={14} />
@@ -2028,18 +1809,6 @@ const renderFileTree = (items, parentPath = '') => {
             >
               <Eye size={18} />
               <span>Cloud View</span>
-            </button>
-          )}
-
-          {/* ✅ NEW: Review Project Button (GitHub) - only when both GitHub AND upload exist */}
-          {canReviewProject && (
-            <button
-              className="chat-action-btn review-project-btn"
-              onClick={handleReviewProject}
-              title="Review project code on GitHub"
-            >
-              <FolderTree size={18} />
-              <span>Review Code</span>
             </button>
           )}
 
@@ -2508,328 +2277,97 @@ const renderFileTree = (items, parentPath = '') => {
         </div>
       )}
 
-      {/* ✅ Project Delivery Modal - Both GitHub + Upload Required */}
+      {/* ✅ Upload Project Modal - Direct ZIP upload to Cloud */}
       {showSubmitRepoModal && (
-        <div className="modal-overlay" onClick={() => !submittingRepo && !uploadingProject && setShowSubmitRepoModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '550px' }}>
+        <div className="modal-overlay" onClick={() => !uploadingProject && setShowSubmitRepoModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="modal-header">
-              <h2>📁 Deliver Your Project</h2>
+              <h2>📦 Upload Project to Cloud</h2>
               <button
                 className="modal-close"
-                onClick={() => {
-                  setShowSubmitRepoModal(false);
-                  setRepoUrl('');
-                }}
-                disabled={submittingRepo || uploadingProject}
+                onClick={() => setShowSubmitRepoModal(false)}
+                disabled={uploadingProject}
               >
                 ×
               </button>
             </div>
 
             <div className="modal-body">
-              {/* Progress Steps */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '1rem',
-                marginBottom: '1.5rem',
-                padding: '1rem',
-                background: '#f8fafc',
-                borderRadius: '12px'
-              }}>
-                {/* Step 1: GitHub */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  background: hasGithubRepo ? '#d1fae5' : '#fef3c7',
-                  color: hasGithubRepo ? '#065f46' : '#92400e'
-                }}>
-                  {hasGithubRepo ? <CheckCircle2 size={18} /> : <span style={{ fontWeight: 600 }}>1</span>}
-                  <span style={{ fontWeight: 500 }}>GitHub Repo</span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', color: '#ccc' }}>→</div>
-
-                {/* Step 2: Upload */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  background: hasUploadedProject ? '#d1fae5' : (hasGithubRepo ? '#fef3c7' : '#f1f5f9'),
-                  color: hasUploadedProject ? '#065f46' : (hasGithubRepo ? '#92400e' : '#94a3b8')
-                }}>
-                  {hasUploadedProject ? <CheckCircle2 size={18} /> : <span style={{ fontWeight: 600 }}>2</span>}
-                  <span style={{ fontWeight: 500 }}>Upload Files</span>
+              <div className="github-info-banner" style={{ background: '#f0fdf4', borderColor: '#10b981' }}>
+                <Shield size={20} style={{ color: '#10b981' }} />
+                <div>
+                  <strong>Upload your project as a ZIP file.</strong>
+                  The investor will be able to browse the files securely via Cloud View.
                 </div>
               </div>
 
-              {/* Step 1: GitHub Repository Form */}
-              {!hasGithubRepo && (
-                <div>
-                  {/* Private Repo Warning Banner */}
-                  {showPrivateRepoWarning && (
-                    <div className="private-repo-warning" style={{
-                      background: '#fef3c7',
-                      border: '1px solid #f59e0b',
-                      borderRadius: '8px',
-                      padding: '1rem',
-                      marginBottom: '1rem',
-                      display: 'flex',
-                      gap: '0.75rem'
-                    }}>
-                      <Shield size={20} style={{ color: '#d97706', flexShrink: 0 }} />
-                      <div>
-                        <strong style={{ color: '#92400e' }}>Private Repository Detected</strong>
-                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: '#a16207' }}>
-                          This repository is private. Please provide a GitHub Personal Access Token to grant read access.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+              {/* Hidden ZIP file input */}
+              <input
+                type="file"
+                ref={zipFileInputRef}
+                onChange={handleZipFileSelect}
+                accept=".zip"
+                style={{ display: 'none' }}
+              />
 
-                  <div className="github-info-banner">
-                    <Shield size={20} />
-                    <div>
-                      <strong>Step 1:</strong> Link your GitHub repository for code review.
-                      The investor will be able to preview your code securely.
-                    </div>
-                  </div>
-
-                  <div className="form-group" style={{ marginTop: '1rem' }}>
-                    <label htmlFor="repo-url">Repository URL *</label>
-                    <input
-                      id="repo-url"
-                      type="url"
-                      className="form-select"
-                      value={repoUrl}
-                      onChange={(e) => setRepoUrl(e.target.value)}
-                      placeholder="https://github.com/username/repository"
-                      required
-                    />
-                    <span className="form-hint">
-                      Example: https://github.com/facebook/react
-                    </span>
-                  </div>
-
-                  {/* Access Token Input for Private Repos */}
-                  <div className="form-group" style={{ marginTop: '1rem' }}>
-                    <label htmlFor="access-token" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      GitHub Personal Access Token
-                      {!isPrivateRepo && (
-                        <span style={{
-                          fontSize: '0.75rem',
-                          background: '#e5e7eb',
-                          padding: '0.15rem 0.5rem',
-                          borderRadius: '4px',
-                          color: '#6b7280'
-                        }}>Optional - For Private Repos</span>
-                      )}
-                      {isPrivateRepo && (
-                        <span style={{
-                          fontSize: '0.75rem',
-                          background: '#fef3c7',
-                          padding: '0.15rem 0.5rem',
-                          borderRadius: '4px',
-                          color: '#92400e'
-                        }}>Required for Private Repo</span>
-                      )}
-                    </label>
-                    <input
-                      id="access-token"
-                      type="password"
-                      className="form-select"
-                      value={accessToken}
-                      onChange={(e) => setAccessToken(e.target.value)}
-                      placeholder="ghp_..."
-                      required={isPrivateRepo}
-                    />
-                    <span className="form-hint">
-                      {isPrivateRepo ? (
-                        <>
-                          Your repository is private.
-                          <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" style={{marginLeft: '4px', color: '#2563eb'}}>
-                            Create a token
-                          </a> with <code style={{ background: '#f3f4f6', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>repo</code> scope.
-                        </>
-                      ) : (
-                        <>
-                          Only needed for private repositories.
-                          <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" style={{marginLeft: '4px', color: '#2563eb'}}>
-                            Create a token
-                          </a> if needed.
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Token Security Notice */}
-                  {(accessToken || isPrivateRepo) && (
-                    <div style={{
-                      background: '#f0fdf4',
-                      border: '1px solid #10b981',
-                      borderRadius: '8px',
-                      padding: '1rem',
-                      marginTop: '1rem',
-                      display: 'flex',
-                      gap: '0.75rem'
-                    }}>
-                      <Shield size={18} style={{ color: '#059669', flexShrink: 0 }} />
-                      <div style={{ fontSize: '0.85rem' }}>
-                        <strong style={{ color: '#065f46' }}>🔒 Security Notice:</strong>
-                        <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: '#047857' }}>
-                          <li>Token is encrypted and stored securely</li>
-                          <li>Only used to fetch code for review</li>
-                          <li>You can revoke it anytime from GitHub</li>
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Step 2: Upload Project Form (only shown after GitHub is done) */}
-              {hasGithubRepo && !hasUploadedProject && (
-                <div>
-                  <div className="github-info-banner" style={{ background: '#f0fdf4', borderColor: '#10b981' }}>
-                    <Shield size={20} style={{ color: '#10b981' }} />
-                    <div>
-                      <strong>Step 2:</strong> Upload your project files for fast delivery.
-                      This ensures the investor can download quickly from our cloud.
-                    </div>
-                  </div>
-
-                  {/* Hidden file inputs */}
-                  <input
-                    type="file"
-                    ref={folderInputRef}
-                    onChange={handleFolderSelect}
-                    webkitdirectory=""
-                    directory=""
-                    multiple
-                    style={{ display: 'none' }}
-                  />
-                  <input
-                    type="file"
-                    ref={zipFileInputRef}
-                    onChange={handleZipFileSelect}
-                    accept=".zip"
-                    style={{ display: 'none' }}
-                  />
-
-                  {!uploadingProject ? (
-                    <div style={{ marginTop: '1.5rem' }}>
-                      <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 500 }}>
-                        Choose upload method:
-                      </label>
-                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                        {/* Option 1: Select Folder */}
-                        <button
-                          type="button"
-                          onClick={() => folderInputRef.current?.click()}
-                          className="btn-secondary"
-                          style={{
-                            flex: 1,
-                            minWidth: '180px',
-                            padding: '1.5rem',
-                            border: '2px dashed #10b981',
-                            borderRadius: '12px',
-                            background: '#f0fdf4',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                          }}
-                        >
-                          <Folder size={28} style={{ color: '#10b981' }} />
-                          <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Select Folder</span>
-                          <span style={{ fontSize: '0.8rem', color: '#888' }}>
-                            Auto-compress to ZIP
-                          </span>
-                        </button>
-
-                        {/* Option 2: Upload ZIP */}
-                        <button
-                          type="button"
-                          onClick={() => zipFileInputRef.current?.click()}
-                          className="btn-secondary"
-                          style={{
-                            flex: 1,
-                            minWidth: '180px',
-                            padding: '1.5rem',
-                            border: '2px dashed #2563eb',
-                            borderRadius: '12px',
-                            background: '#eff6ff',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                          }}
-                        >
-                          <FileText size={28} style={{ color: '#2563eb' }} />
-                          <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Upload ZIP File</span>
-                          <span style={{ fontSize: '0.8rem', color: '#888' }}>
-                            Already compressed
-                          </span>
-                        </button>
-                      </div>
-                      <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888', textAlign: 'center' }}>
-                        Maximum size: 5GB
-                      </p>
-                    </div>
-                  ) : (
-                    <div style={{
-                      padding: '2rem',
-                      border: '2px solid #10b981',
+              {!uploadingProject ? (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => zipFileInputRef.current?.click()}
+                    className="btn-secondary"
+                    style={{
+                      width: '100%',
+                      padding: '2.5rem 1.5rem',
+                      border: '2px dashed #2563eb',
                       borderRadius: '12px',
-                      background: '#f0fdf4',
-                      textAlign: 'center',
-                      marginTop: '1.5rem'
-                    }}>
-                      <Loader size={32} className="spinning" style={{ color: '#10b981', marginBottom: '1rem' }} />
-                      <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
-                        {uploadProgress < 10 ? 'Preparing files...' : 'Uploading to cloud...'}
-                      </div>
-                      <div style={{
-                        width: '100%',
-                        height: '8px',
-                        background: '#e0e0e0',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                        marginTop: '1rem'
-                      }}>
-                        <div style={{
-                          width: `${uploadProgress}%`,
-                          height: '100%',
-                          background: 'linear-gradient(90deg, #10b981, #059669)',
-                          transition: 'width 0.3s ease'
-                        }} />
-                      </div>
-                      <div style={{ marginTop: '0.5rem', color: '#666' }}>{uploadProgress}%</div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Completion Message */}
-              {hasGithubRepo && hasUploadedProject && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '2rem',
-                  background: '#d1fae5',
-                  borderRadius: '12px'
-                }}>
-                  <CheckCircle2 size={48} style={{ color: '#065f46', marginBottom: '1rem' }} />
-                  <h3 style={{ margin: '0 0 0.5rem 0', color: '#065f46' }}>Project Delivered!</h3>
-                  <p style={{ margin: 0, color: '#047857' }}>
-                    Your project is ready for the investor to review and download.
+                      background: '#eff6ff',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.75rem'
+                    }}
+                  >
+                    <FileText size={40} style={{ color: '#2563eb' }} />
+                    <span style={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e40af' }}>Select ZIP File</span>
+                    <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                      Your project must be compressed as a .zip file
+                    </span>
+                  </button>
+                  <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888', textAlign: 'center' }}>
+                    Maximum size: 5GB
                   </p>
+                </div>
+              ) : (
+                <div style={{
+                  padding: '2rem',
+                  border: '2px solid #10b981',
+                  borderRadius: '12px',
+                  background: '#f0fdf4',
+                  textAlign: 'center',
+                  marginTop: '1.5rem'
+                }}>
+                  <Loader size={32} className="spinning" style={{ color: '#10b981', marginBottom: '1rem' }} />
+                  <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
+                    {uploadProgress < 10 ? 'Preparing...' : 'Uploading to cloud...'}
+                  </div>
+                  <div style={{
+                    width: '100%',
+                    height: '8px',
+                    background: '#e0e0e0',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    marginTop: '1rem'
+                  }}>
+                    <div style={{
+                      width: `${uploadProgress}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #10b981, #059669)',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                  <div style={{ marginTop: '0.5rem', color: '#666' }}>{uploadProgress}%</div>
                 </div>
               )}
             </div>
@@ -2838,28 +2376,10 @@ const renderFileTree = (items, parentPath = '') => {
               <button
                 className="btn-secondary"
                 onClick={() => setShowSubmitRepoModal(false)}
-                disabled={submittingRepo || uploadingProject}
+                disabled={uploadingProject}
               >
-                {projectDeliveryComplete ? 'Close' : 'Cancel'}
+                Cancel
               </button>
-
-              {/* Submit GitHub button */}
-              {!hasGithubRepo && (
-                <button
-                  className="btn-primary"
-                  onClick={handleSubmitRepo}
-                  disabled={submittingRepo || !repoUrl.trim() || (isPrivateRepo && !accessToken.trim())}
-                >
-                  {submittingRepo ? (
-                    <>
-                      <Loader size={18} className="spinning" />
-                      Submitting...
-                    </>
-                  ) : (
-                    'Submit & Continue →'
-                  )}
-                </button>
-              )}
             </div>
           </div>
         </div>
