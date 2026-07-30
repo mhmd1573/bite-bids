@@ -1701,10 +1701,13 @@ const canShowConfirmButton = (() => {
 })();
 
 
-// Both developer and investor can open disputes - DISABLED after project completion or cancellation
+// Both developer and investor can open disputes - DISABLED after project approval or cancellation
+// For auction projects: status changes to 'completed'
+// For fixed_price projects: status stays 'fixed_price' but payout record is created
+// The payout record is the source of truth for approval
 const canOpenDispute = projectData && (
   ['in_progress', 'fixed_price'].includes(projectData.status)
-) && !hasActiveDispute && projectData.status !== 'completed' && projectData.status !== 'cancelled';
+) && !hasActiveDispute && projectData.status !== 'completed' && projectData.status !== 'cancelled' && !hasPayoutRecord && !isPayoutActive && !hasConfirmedProject && !hasAnyPayout;
 
 // Developer can upload project directly to cloud
 const canSubmitRepo = isDeveloper && !hasUploadedProject;
