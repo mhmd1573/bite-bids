@@ -753,21 +753,21 @@ const NotificationSystem = ({ currentUser, handleNotificationPayment }) => {
                     <div className="notification-dot" />
                   )}
 
-                  <div className="notification-content">
-                    <div className="notification-title">
-                      <span className="notification-icon">
-                        {getNotificationIcon(notification.type)}
+                    <div className="notification-content">
+                      <div className="notification-title">
+                        <span className="notification-icon">
+                          {getNotificationIcon(notification.type)}
+                        </span>
+                        {notification.title}
+                      </div>
+                      
+                      <p className="notification-message" title={notification.message}>
+                        {notification.message}
+                      </p>
+                      
+                      <span className="notification-time">
+                        {formatTimeAgo(notification.created_at)}
                       </span>
-                      {notification.title}
-                    </div>
-                    
-                    <p className="notification-message">
-                      {notification.message}
-                    </p>
-                    
-                    <span className="notification-time">
-                      {formatTimeAgo(notification.created_at)}
-                    </span>
 
                     {/* ✅ BID RECEIVED - Accept/Reject Buttons */}
                     {notification.type === 'bid_received' && !notification.read && (
