@@ -119,25 +119,25 @@ const DashboardAdmin = ({ navigateToPage }) => {
   const [showTechDropdown, setShowTechDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
-// Tech stack and location options (same as developer dashboard)
-const techStackOptions = [
-  'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
-  'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'Pandas', 'NumPy',
-  'React', 'Vue.js', 'Angular', 'Node.js', 'Express', 'Django', 'Flask', 'FastAPI',
-  'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch',
-  'AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes',
-  'Git', 'CI/CD', 'GraphQL', 'REST API', 'Microservices'
-];
+  // Tech stack and location options (same as developer dashboard)
+  const techStackOptions = [
+      'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
+      'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'Pandas', 'NumPy',
+      'React', 'Vue.js', 'Angular', 'Node.js', 'Express', 'Django', 'Flask', 'FastAPI',
+      'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch',
+      'AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes',
+      'Git', 'CI/CD', 'GraphQL', 'REST API', 'Microservices'
+    ];
 
-const locationOptions = [
-  'Remote',
-  'United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Spain', 'Italy',
-  'Australia', 'New Zealand', 'Japan', 'Singapore', 'India', 'China', 'Brazil',
-  'New York, USA', 'San Francisco, USA', 'Los Angeles, USA', 'Austin, USA', 'Seattle, USA',
-  'London, UK', 'Berlin, Germany', 'Paris, France', 'Amsterdam, Netherlands',
-  'Toronto, Canada', 'Vancouver, Canada', 'Sydney, Australia', 'Melbourne, Australia',
-  'Tokyo, Japan', 'Singapore', 'Dubai, UAE', 'Tel Aviv, Israel'
-];
+  const locationOptions = [
+      'Remote',
+      'United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Spain', 'Italy',
+      'Australia', 'New Zealand', 'Japan', 'Singapore', 'India', 'China', 'Brazil',
+      'New York, USA', 'San Francisco, USA', 'Los Angeles, USA', 'Austin, USA', 'Seattle, USA',
+      'London, UK', 'Berlin, Germany', 'Paris, France', 'Amsterdam, Netherlands',
+      'Toronto, Canada', 'Vancouver, Canada', 'Sydney, Australia', 'Melbourne, Australia',
+      'Tokyo, Japan', 'Singapore', 'Dubai, UAE', 'Tel Aviv, Israel'
+    ];
 
 
   const [userBanLoading, setUserBanLoading] = useState(false);
@@ -978,6 +978,7 @@ const handleUpdateProject = async (e) => {
 
   return (
     <div className="dashboard-admin">
+    
       {/* Header */}
       <section className="admin-header">
         <div className="container">
@@ -1895,8 +1896,6 @@ const handleUpdateProject = async (e) => {
         </div>
       )}
 
-
-
       {/* Project Details Modal */}
       {showProjectDetails && selectedProjectDetails && (
                       <div className="modal-overlay" onClick={handleCloseDetails}>
@@ -2144,7 +2143,6 @@ const handleUpdateProject = async (e) => {
                       </div>
        )}
       
-
       {/* Edit Project Modal - WITH IMAGE UPLOAD */}
       {showEditDialog && editingProject && (
                     <div className="modal-overlay" onClick={() => setShowEditDialog(false)}>
