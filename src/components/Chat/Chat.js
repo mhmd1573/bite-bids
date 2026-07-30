@@ -1691,10 +1691,10 @@ const canShowConfirmButton = (() => {
 })();
 
 
-// Both developer and investor can open disputes
+// Both developer and investor can open disputes - DISABLED after project completion or cancellation
 const canOpenDispute = projectData && (
   ['in_progress', 'fixed_price'].includes(projectData.status)
-) && !hasActiveDispute;
+) && !hasActiveDispute && projectData.status !== 'completed' && projectData.status !== 'cancelled';
 
 // Developer can upload project directly to cloud
 const canSubmitRepo = isDeveloper && !hasUploadedProject;
@@ -1710,6 +1710,16 @@ const canDownloadProject = (() => {
   // Investor can download if THEY have a payout
   return hasPayoutRecord || isPayoutActive || hasConfirmedProject;
 })();
+
+// ✅ Chat is read-only when project is approved or dispute resolved with final decision
+// Cases that make chat read-only:
+// 1. Payout exists (investor approved or admin resolved with refund_developer)
+// 2. Project status is 'completed' (auction project approved)
+// 3. Project status is 'cancelled' (dispute resolved with refund_investor on auction)
+// 4. Fixed-price dispute resolved with refund_investor (no payout, status stays fixed_price)
+//    → detected via hasActiveDispute being false + project status still fixed_price
+//    but a resolved dispute record exists (handled by backend check)
+const isChatReadOnly = hasPayoutRecord || isPayoutActive || hasConfirmedProject || projectData?.status === 'cancelled';
 
 // Project delivery complete when upload exists
 const projectDeliveryComplete = hasUploadedProject;
@@ -1889,7 +1899,8 @@ console.log('🔍 Button Visibility Debug:', {
               </button>
             )}
 
-          {/* Dispute Button - Available for Both Developer and Investor */}
+          {/* Dispute Button - Only show if project is not completed and user can open dispute */}
+          {canOpenDispute && (
             <button
               className={`chat-action-btn dispute-btn ${hasActiveDispute ? 'disabled' : ''}`}
               onClick={() => !hasActiveDispute && setShowDisputeModal(true)}
@@ -1899,6 +1910,7 @@ console.log('🔍 Button Visibility Debug:', {
               <AlertTriangle size={18} />
               <span>{hasActiveDispute ? 'Dispute Already Opened' : 'Open Dispute'}</span>
             </button>
+          )}
 
 
           <button className="chat-more-btn">
@@ -2029,71 +2041,78 @@ console.log('🔍 Button Visibility Debug:', {
         </div>
       )}
 
-      {/* Chat Input */}
-      <form className="chat-input-container" onSubmit={handleSendMessage}>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileUpload}
-          accept="image/png,image/jpeg,image/jpg"
-          style={{ display: 'none' }}
-        />
-        
-        <button
-          type="button"
-          className="chat-input-btn"
-          onClick={() => fileInputRef.current.click()}
-          title="Attach image"
-          disabled={uploading}
-        >
-          <Paperclip size={20} />
-        </button>
-        
-        <input
-          type="text"
-          className="chat-input"
-          placeholder="Type a message..."
-          value={newMessage}
-          onChange={(e) => {
-            setNewMessage(e.target.value);
-            handleTyping();
-          }}
-          disabled={uploading}
-        />
-        
-        <div className="emoji-picker-wrapper" ref={emojiPickerRef}>
+      {/* Chat Input - Read-only when project is completed */}
+      {isChatReadOnly ? (
+        <div className="chat-readonly-banner">
+          <CheckCircle2 size={20} />
+          <span>This project has been completed. The chat is now in read-only mode.</span>
+        </div>
+      ) : (
+        <form className="chat-input-container" onSubmit={handleSendMessage}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/png,image/jpeg,image/jpg"
+            style={{ display: 'none' }}
+          />
+          
           <button
             type="button"
-            className={`chat-input-btn ${showEmojiPicker ? 'active' : ''}`}
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            title="Add emoji"
+            className="chat-input-btn"
+            onClick={() => fileInputRef.current.click()}
+            title="Attach image"
             disabled={uploading}
           >
-            <Smile size={20} />
+            <Paperclip size={20} />
           </button>
           
-          {showEmojiPicker && (
-            <div className="emoji-picker-container">
-              <EmojiPicker 
-                onEmojiClick={handleEmojiClick}
-                width={320}
-                height={400}
-                searchDisabled={false}
-                skinTonesDisabled={false}
-                previewConfig={{ showPreview: false }}
-              />
-            </div>
-          )}
-        </div>
-        
-        <button
-          type="submit"
-          className="chat-send-btn"
-          disabled={!newMessage.trim() || !isConnected || uploading}
-        >
-          <Send size={20} />
-        </button>
-      </form>
+          <input
+            type="text"
+            className="chat-input"
+            placeholder="Type a message..."
+            value={newMessage}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
+            disabled={uploading}
+          />
+          
+          <div className="emoji-picker-wrapper" ref={emojiPickerRef}>
+            <button
+              type="button"
+              className={`chat-input-btn ${showEmojiPicker ? 'active' : ''}`}
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              title="Add emoji"
+              disabled={uploading}
+            >
+              <Smile size={20} />
+            </button>
+            
+            {showEmojiPicker && (
+              <div className="emoji-picker-container">
+                <EmojiPicker 
+                  onEmojiClick={handleEmojiClick}
+                  width={320}
+                  height={400}
+                  searchDisabled={false}
+                  skinTonesDisabled={false}
+                  previewConfig={{ showPreview: false }}
+                />
+              </div>
+            )}
+          </div>
+          
+          <button
+            type="submit"
+            className="chat-send-btn"
+            disabled={!newMessage.trim() || !isConnected || uploading}
+          >
+            <Send size={20} />
+          </button>
+        </form>
+      )}
 
       {/* Connection Status */}
       {!isConnected && (

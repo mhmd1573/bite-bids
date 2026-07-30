@@ -70,7 +70,7 @@ const AdminDisputes = () => {
       
       // ✅ UPDATED: Use simplified endpoint
       const response = await fetch(
-        `${BACKEND_URL}/api/admin/disputes/disputes-simple/${selectedDispute.id}/resolve`,
+        `${BACKEND_URL}/api/disputes/admin/disputes-simple/${selectedDispute.id}/resolve`,
         {
           method: 'POST',
           headers: {

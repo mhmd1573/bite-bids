@@ -3521,3 +3521,23 @@ body:has(.chat-page) {
     display: none !important;
   }
 }
+
+/* ✅ Read-only banner for completed projects */
+.chat-readonly-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border-top: 2px solid #86efac;
+  color: #166534;
+  font-size: 0.9rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.chat-readonly-banner svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
