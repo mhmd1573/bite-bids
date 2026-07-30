@@ -80,6 +80,9 @@ const [downloadingProject, setDownloadingProject] = useState(false);
 const [downloadProgress, setDownloadProgress] = useState(0);
 const [hasConfirmedProject, setHasConfirmedProject] = useState(false);
 
+// ✅ Track if ANY payout exists on the project (for developer visibility)
+const [hasAnyPayout, setHasAnyPayout] = useState(false);
+
 
 // Add this function to toggle sidebar:
 const toggleSidebar = () => {
@@ -486,10 +489,17 @@ const checkPayoutStatus = async () => {
       // ✅ Only set hasConfirmedProject if the payout belongs to this investor
       setHasConfirmedProject(isConfirmed);
       
+      // ✅ hasAnyPayout: true if ANY payout exists on this project (for developer visibility)
+      // The developer doesn't have their own payout, but needs to see the chat as read-only
+      // when any investor confirms
+      const anyPayout = data.has_any_payout === true;
+      setHasAnyPayout(anyPayout);
+      
       console.log(`📊 Payout exists for current investor: ${isConfirmed}, status: ${payout?.status || 'none'}`);
       console.log(`📊 Payout belongs to current user: ${belongsToCurrentUser}`);
+      console.log(`📊 Any payout on project: ${anyPayout}`);
       
-      return isConfirmed;
+      return isConfirmed || anyPayout;
     } else {
       console.error('Failed to fetch payout status:', await response.text());
       return false;
@@ -1719,7 +1729,7 @@ const canDownloadProject = (() => {
 // 4. Fixed-price dispute resolved with refund_investor (no payout, status stays fixed_price)
 //    → detected via hasActiveDispute being false + project status still fixed_price
 //    but a resolved dispute record exists (handled by backend check)
-const isChatReadOnly = hasPayoutRecord || isPayoutActive || hasConfirmedProject || projectData?.status === 'cancelled';
+const isChatReadOnly = hasPayoutRecord || isPayoutActive || hasConfirmedProject || hasAnyPayout || projectData?.status === 'cancelled';
 
 // Project delivery complete when upload exists
 const projectDeliveryComplete = hasUploadedProject;
