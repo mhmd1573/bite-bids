@@ -508,7 +508,7 @@ useEffect(() => {
       };
 
       const response = await axios.post(
-        `${BACKEND_URL}/api/projects/${selectedProjectDetails.id}/bids`,
+        `${BACKEND_URL}/api/bids/projects/${selectedProjectDetails.id}/bids`,
         bidData,
         {
           headers: {
