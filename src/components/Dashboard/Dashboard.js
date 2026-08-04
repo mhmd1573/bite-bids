@@ -824,7 +824,7 @@ const handleInitiatePostProject = async () => {
             showNotificationModal(
               "success",
               "Bidding Closed Successfully!",
-              `The highest bid of ${highestAmount} has been selected. ${winnerName} has been notified and assigned to your project. No more bids will be accepted for this project.`
+              `The highest bid of the project has been selected. The Winner Investor has been notified. No more bids will be accepted for this project.`
             );
             
             setShowCloseBiddingDialog(false);
