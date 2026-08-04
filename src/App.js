@@ -210,7 +210,7 @@ useEffect(() => {
           setCurrentPage('chat');
           window.history.replaceState({}, '', `/chat/${chatRoom.id}`);
         } else {
-          showNotification('info', 'Chat Room Pending', 'Chat room is being created. Check notifications.');
+          showNotification('info', 'Chat Room', 'Chat room is being created.');
           setCurrentPage('chats');
         }
       } catch (error) {

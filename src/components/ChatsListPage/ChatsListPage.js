@@ -458,11 +458,11 @@ const ChatsListPage = ({ currentUser, navigateToChat }) => {
           <div style={{ fontSize: '0.85rem', lineHeight: '1.6', color: '#475569', marginTop: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>1</span>
-              <p style={{ margin: 0 }}><strong>Secure Code Review:</strong> The developer shares their private repository. You can review code in a protected tree view — copying, downloading, or stealing is blocked.</p>
+              <p style={{ margin: 0 }}><strong>Secure Code Review:</strong> The developer shares their project folder. You can review code in a protected tree view — copying, downloading, or stealing is blocked.</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
               <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>2</span>
-              <p style={{ margin: 0 }}><strong>Confirm & Download:</strong> Once you verify the project is complete, click "Confirm" to release payment. A download button will appear to get the full project files.</p>
+              <p style={{ margin: 0 }}><strong>Confirm & Download:</strong> Once you verify the project is complete, click "Confirm" to release payment to developer. A download button will appear to download the full project files.</p>
             </div>
             <div style={{
               background: '#fef3c7',

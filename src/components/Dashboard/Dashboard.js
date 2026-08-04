@@ -1749,15 +1749,15 @@ const handleInitiatePostProject = async () => {
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
                         <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0 }}>1</span>
                         <div>
-                          <strong style={{ color: '#0369a1' }}>Submit Your Repository</strong>
-                          <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Share your private repository link and access token. BiteBids displays your code in a secure tree view — investors can review but cannot copy, download, or steal your work.</p>
+                          <strong style={{ color: '#0369a1' }}>Submit Your Project</strong>
+                          <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Share your project folder. BiteBids displays your code in a secure tree view — investors can review but cannot copy, download, or steal your work.</p>
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0 }}>2</span>
                         <div>
                           <strong style={{ color: '#0369a1' }}>Get Paid Securely</strong>
-                          <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Once the investor confirms the project is complete, payment is released to you automatically. Only then can they download the final project files.</p>
+                          <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>Once the investor confirms the project is complete, payment is released to you via manual bank transfer. Only then can they download the final project files.</p>
                         </div>
                       </div>
                     </div>
