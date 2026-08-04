@@ -211,11 +211,12 @@ useEffect(() => {
           window.history.replaceState({}, '', `/chat/${chatRoom.id}`);
         } else {
           showNotification('info', 'Chat Room Pending', 'Chat room is being created. Check notifications.');
-          setCurrentPage('dashboard');
+          setCurrentPage('chats');
         }
       } catch (error) {
         console.error('Error:', error);
-        setCurrentPage('dashboard');
+        showNotification('info', 'Redirecting', 'Taking you to your chats...');
+        setCurrentPage('chats');
       }
     }
   });
