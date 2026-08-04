@@ -806,7 +806,7 @@ const handleInitiatePostProject = async () => {
           try {
             const token = localStorage.getItem('token');
             const response = await axios.put(
-              `${BACKEND_URL}/api/projects/${projectToClose.id}/close-bidding`,
+              `${BACKEND_URL}/api/bids/projects/${projectToClose.id}/close-bidding`,
               {},
               {
                 headers: { Authorization: `Bearer ${token}` }
@@ -1816,9 +1816,7 @@ const handleInitiatePostProject = async () => {
                     </div>
         
                     <div className="modal-body">
-                    
-        
-        
+                      
                       {/* Project Header */}
                       <div className="project-details-header">
                         <div className="project-client-info">
@@ -1967,7 +1965,7 @@ const handleInitiatePostProject = async () => {
                       {/* ✅ NEW: Project Images Gallery */}
                       {selectedProjectDetails.images && selectedProjectDetails.images.length > 0 && (
                         <div style={{ marginBottom: '2rem' }}>
-                          <h3 style={{ 
+                          <h3 style={{
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: '0.5rem',

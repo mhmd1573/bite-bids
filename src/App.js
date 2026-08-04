@@ -193,7 +193,7 @@ useEffect(() => {
   }).then(async response => {
     if (response.data.success) {
       const projectId = response.data.project_id;
-      showNotification('success', 'Payment Completed', 'Opening chat...');
+      showNotification('success', 'Payment Completed', 'You can now start chatting with the developer.');
       
       // Wait for webhook to create room
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -1013,7 +1013,7 @@ useEffect(() => {
       return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    if (!isVisible || currentPage === 'login') return null;
+    if (!isVisible || currentPage === 'login' || currentPage === 'chat') return null;
 
     return (
       <div className="scroll-buttons-container fixed bottom-4 right-4 z-50 flex flex-col gap-2 md:bottom-6 md:right-6 md:gap-3">
