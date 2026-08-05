@@ -122,11 +122,6 @@ const Dashboard = ({ user, navigateToPage }) => {
       const [checkingCredits, setCheckingCredits] = useState(false);
 
 
-      // Show notification function
-      const showNotificationModal = (type, title, message) => {
-        showNotification(type, title, message);
-      };
-
       const fetchNotifications = async () => {
         if (!user) return;
 
