@@ -79,6 +79,20 @@ const Marketplace = ({ user }) => {
   const [checkingCredits, setCheckingCredits] = useState(false);
 
 
+  // Helper: calculate total price for fixed-price projects (budget + 6% + $30)
+  const getFixedPriceTotal = (budget) => {
+    if (!budget) return 0;
+    return budget + (budget * 0.06) + 30;
+  };
+
+  // Helper: check if current user already purchased a fixed-price project
+  const hasUserPurchased = (project) => {
+    if (!project || !user || project.status !== 'fixed_price') return false;
+    // Check if current user is in the project's buyers/investors list
+    // The project data from backend may include purchased_by or confirmed_investors
+    return project.purchased_by?.includes(user.id) || false;
+  };
+
   // Show notification function
   const showNotificationModal = (type, title, message) => {
     showNotification(type, title, message);
@@ -512,6 +526,10 @@ useEffect(() => {
 
   // Handle open bid modal
   const handleOpenBidModal = () => {
+    if (!user) {
+      showNotificationModal('error', 'Authentication Required', 'Please log in to place a bid.');
+      return;
+    }
     setBidForm({
       amount: '',
     });
@@ -591,6 +609,11 @@ useEffect(() => {
   const handlePayNow = () => {
     if (!selectedProjectDetails) {
       showNotificationModal('error', 'Error', 'No project selected');
+      return;
+    }
+
+    if (!user) {
+      showNotificationModal('error', 'Authentication Required', 'Please log in to purchase this project.');
       return;
     }
 
@@ -1021,7 +1044,13 @@ useEffect(() => {
                         
                         <div className="project-meta-item">
                           <DollarSign className="w-4 h-4 text-success-600" />
-                          <span className="project-budget">${project.budget != null ? project.budget.toLocaleString() : 'N/A'}</span>
+                          <span className="project-budget">
+                            ${project.budget != null 
+                              ? (project.status === 'fixed_price'
+                                ? getFixedPriceTotal(project.budget).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                                : project.budget.toLocaleString())
+                              : 'N/A'}
+                          </span>
                         </div>
 
                         <div className="project-meta-item">
@@ -1054,7 +1083,12 @@ useEffect(() => {
                           </span>
                         </div>
 
-                        {project.status !== 'fixed_price' && (
+                        {project.status === 'fixed_price' ? (
+                          <div className="project-meta-item">
+                            <Users className="w-4 h-4 text-secondary" />
+                            <span>{project.buyers_count || 0} bought</span>
+                          </div>
+                        ) : (
                           <div className="project-meta-item">
                             <Users className="w-4 h-4 text-secondary" />
                             <span>{project.bids_count} bids</span>
@@ -1673,8 +1707,16 @@ useEffect(() => {
                 <div className="stat-item">
                   <DollarSign className="stat-icon-market text-success-600" />
                   <div>
-                    <div className="stat-value">${selectedProjectDetails.budget != null ? selectedProjectDetails.budget.toLocaleString() : 'N/A'}</div>
-                    <div className="stat-label">Budget</div>
+                    <div className="stat-value">
+                      ${selectedProjectDetails.budget != null 
+                        ? (selectedProjectDetails.status === 'fixed_price'
+                          ? getFixedPriceTotal(selectedProjectDetails.budget).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                          : selectedProjectDetails.budget.toLocaleString())
+                        : 'N/A'}
+                    </div>
+                    <div className="stat-label">
+                      {selectedProjectDetails.status === 'fixed_price' ? 'Total Price' : 'Budget'}
+                    </div>
                   </div>
                 </div>
 
@@ -1711,7 +1753,15 @@ useEffect(() => {
                   </div>
                 </div>
 
-                {selectedProjectDetails.status !== 'fixed_price' && (
+                {selectedProjectDetails.status === 'fixed_price' ? (
+                  <div className="stat-item">
+                    <Users className="stat-icon-market text-secondary" />
+                    <div>
+                      <div className="stat-value">{selectedProjectDetails.buyers_count || 0}</div>
+                      <div className="stat-label">Bought</div>
+                    </div>
+                  </div>
+                ) : (
                   <div className="stat-item">
                     <Users className="stat-icon-market text-secondary" />
                     <div>
@@ -1788,24 +1838,42 @@ useEffect(() => {
                     Close
                   </button>
 
-                  <button className="btn btn-primary" onClick={handleOpenBidModal}>
+                  <button className="btn btn-primary" onClick={() => {
+                    if (!user) {
+                      showNotificationModal('error', 'Authentication Required', 'Please log in to place a bid.');
+                      return;
+                    }
+                    handleOpenBidModal();
+                  }}>
                     <DollarSign className="w-4 h-4" />
                     Place a Bid
                   </button>
                 </>
               )}
 
-              {user && user.role === 'investor' && selectedProjectDetails?.status === 'fixed_price' && (
+              {user && user.role === 'investor' && selectedProjectDetails?.status === 'fixed_price' && !hasUserPurchased(selectedProjectDetails) && (
                 <>
                   <button className="btn btn-outline" onClick={handleCloseDetails}>
                     Cancel
                   </button>
 
-                  <button className="btn btn-success" onClick={handlePayNow}>
+                  <button className="btn btn-success" onClick={() => {
+                    if (!user) {
+                      showNotificationModal('error', 'Authentication Required', 'Please log in to purchase this project.');
+                      return;
+                    }
+                    handlePayNow();
+                  }}>
                     <DollarSign className="w-4 h-4" />
                     Pay Now
                   </button>
                 </>
+              )}
+
+              {user && user.role === 'investor' && selectedProjectDetails?.status === 'fixed_price' && hasUserPurchased(selectedProjectDetails) && (
+                <button className="btn btn-outline" onClick={handleCloseDetails} disabled>
+                  Already Purchased
+                </button>
               )}
             </div>
 
@@ -1992,17 +2060,7 @@ useEffect(() => {
                     
                     <div className="payment-item">
                       <span>Project Budget</span>
-                      <span className="payment-amount">${selectedProjectDetails.budget.toLocaleString()}</span>
-                    </div>
-
-                    <div className="payment-item">
-                      <span>Platform Fee (6%)</span>
-                      <span className="payment-amount">${(selectedProjectDetails.budget * 0.06).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                    </div>
-
-                    <div className="payment-item">
-                      <span>Fixed Fee</span>
-                      <span className="payment-amount">$30.00</span>
+                      <span className="payment-amount">${selectedProjectDetails.budget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
 
                     <div className="payment-divider"></div>
@@ -2010,7 +2068,7 @@ useEffect(() => {
                     <div className="payment-item payment-total">
                       <span>Total Amount</span>
                       <span className="payment-amount-total">
-                        ${(selectedProjectDetails.budget + (selectedProjectDetails.budget * 0.06) + 30).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        ${getFixedPriceTotal(selectedProjectDetails.budget).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                       </span>
                     </div>
                   </div>

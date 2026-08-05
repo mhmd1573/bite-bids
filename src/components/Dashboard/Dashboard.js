@@ -31,7 +31,22 @@ const getImageUrl = (imageUrl) => {
 const Dashboard = ({ user, navigateToPage }) => {
       const { showNotification } = useNotification();
 
-      // Collapsible guide state
+      // Helper: calculate total price for fixed-price projects (budget + 6% + $30)
+      const getFixedPriceTotal = (budget) => {
+        if (!budget) return 0;
+        return budget + (budget * 0.06) + 30;
+      };
+
+      // Helper: check if current user already purchased a fixed-price project
+      const hasUserPurchased = (project) => {
+        if (!project || !user || project.status !== 'fixed_price') return false;
+        return project.purchased_by?.includes(user.id) || false;
+      };
+
+      // Helper function to show notifications
+      const showNotificationModal = (type, title, message) => {
+        showNotification(type, title, message);
+      };
       const [showProcessGuide, setShowProcessGuide] = useState(false);
 
       const [activeTab, setActiveTab] = useState('overview');
@@ -1171,7 +1186,11 @@ const handleInitiatePostProject = async () => {
                         <div className="project-meta-item">
                           <DollarSign className="w-4 h-4 text-success-600" />
                           <span className="project-budget">
-                            ${project.budget.toLocaleString()}
+                            ${project.budget != null 
+                              ? (project.status === 'fixed_price'
+                                ? getFixedPriceTotal(project.budget).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                                : project.budget.toLocaleString())
+                              : 'N/A'}
                           </span>
                         </div>
 
@@ -1180,7 +1199,9 @@ const handleInitiatePostProject = async () => {
                         <Calendar className="w-4 h-4 text-secondary" />
 
                         {project.status === "fixed_price" ? (
-                          <span style={{color:'#1D4ED8', fontWeight: '600'}}>Fixed Price</span>
+                          <span style={{color:'#1D4ED8', fontWeight: '600'}}>
+                            {project.buyers_count || 0} Bought
+                          </span>
                         ) : (
                           <span>{project.bids_count} Bids</span>
                         )}
@@ -1922,8 +1943,16 @@ const handleInitiatePostProject = async () => {
                         <div className="stat-item">
                           <DollarSign className="stat-icon-market text-success-600" />
                           <div>
-                            <div className="stat-value">${selectedProjectDetails.budget != null ? selectedProjectDetails.budget.toLocaleString() : 'N/A'}</div>
-                            <div className="stat-label">Budget</div>
+                            <div className="stat-value">
+                              ${selectedProjectDetails.budget != null 
+                                ? (selectedProjectDetails.status === 'fixed_price'
+                                  ? getFixedPriceTotal(selectedProjectDetails.budget).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                                  : selectedProjectDetails.budget.toLocaleString())
+                                : 'N/A'}
+                            </div>
+                            <div className="stat-label">
+                              {selectedProjectDetails.status === 'fixed_price' ? 'Total Price' : 'Budget'}
+                            </div>
                           </div>
                         </div>
         
@@ -1960,7 +1989,15 @@ const handleInitiatePostProject = async () => {
                           </div>
                         </div>
         
-                        {selectedProjectDetails.status !== 'fixed_price' && (
+                        {selectedProjectDetails.status === 'fixed_price' ? (
+                          <div className="stat-item">
+                            <Users className="stat-icon-market text-secondary" />
+                            <div>
+                              <div className="stat-value">{selectedProjectDetails.buyers_count || 0}</div>
+                              <div className="stat-label">Bought</div>
+                            </div>
+                          </div>
+                        ) : (
                           <div className="stat-item">
                             <Users className="stat-icon-market text-secondary" />
                             <div>
@@ -2090,24 +2127,42 @@ const handleInitiatePostProject = async () => {
                             Close
                           </button>
         
-                          <button className="btn btn-primary" onClick={handleOpenBidModal}>
+                          <button className="btn btn-primary" onClick={() => {
+                            if (!user) {
+                              showNotificationModal('error', 'Authentication Required', 'Please log in to place a bid.');
+                              return;
+                            }
+                            handleOpenBidModal();
+                          }}>
                             <DollarSign className="w-4 h-4" />
                             Place a Bid
                           </button>
                         </>
                       )}
         
-                      {user && user.role === 'investor' && selectedProjectDetails?.status === 'fixed_price' && (
+                      {user && user.role === 'investor' && selectedProjectDetails?.status === 'fixed_price' && !hasUserPurchased(selectedProjectDetails) && (
                         <>
                           <button className="btn btn-outline" onClick={handleCloseDetails}>
                             Cancel
                           </button>
         
-                          <button className="btn btn-success" onClick={handlePayNow}>
+                          <button className="btn btn-success" onClick={() => {
+                            if (!user) {
+                              showNotificationModal('error', 'Authentication Required', 'Please log in to purchase this project.');
+                              return;
+                            }
+                            handlePayNow();
+                          }}>
                             <DollarSign className="w-4 h-4" />
                             Pay Now
                           </button>
                         </>
+                      )}
+
+                      {user && user.role === 'investor' && selectedProjectDetails?.status === 'fixed_price' && hasUserPurchased(selectedProjectDetails) && (
+                        <button className="btn btn-outline" onClick={handleCloseDetails} disabled>
+                          Already Purchased
+                        </button>
                       )}
                     </div>
         
