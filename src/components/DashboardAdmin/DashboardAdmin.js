@@ -179,6 +179,30 @@ const DashboardAdmin = ({ navigateToPage }) => {
     }
   }, [selectedTab]);
 
+  // 🟢 LIVE DATA: Listen for real-time changes and refresh the admin dashboard
+  useEffect(() => {
+    const handleDataChange = (event) => {
+      const { event_type } = event.detail || {};
+      
+      // Refresh when admin-relevant data changes, or when project data changes
+      if (event_type === 'admin_update' || event_type === 'project_updated' ||
+          event_type === 'project_created' || event_type === 'project_deleted') {
+        console.log('🟢 Admin dashboard live update:', event_type);
+        
+        // Refresh aggregate stats + the data for the currently active tab
+        fetchAdminData();
+        if (selectedTab === 'projects') {
+          fetchProjects();
+        } else if (selectedTab === 'users') {
+          fetchUsers();
+        }
+      }
+    };
+    
+    window.addEventListener('data_change', handleDataChange);
+    return () => window.removeEventListener('data_change', handleDataChange);
+  }, [selectedTab]);
+
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
