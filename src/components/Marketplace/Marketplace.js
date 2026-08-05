@@ -2058,13 +2058,6 @@ useEffect(() => {
                   <div className="payment-summary">
                     <h3 className="section-title">Payment Summary</h3>
                     
-                    <div className="payment-item">
-                      <span>Project Budget</span>
-                      <span className="payment-amount">${selectedProjectDetails.budget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                    </div>
-
-                    <div className="payment-divider"></div>
-
                     <div className="payment-item payment-total">
                       <span>Total Amount</span>
                       <span className="payment-amount-total">
