@@ -448,7 +448,46 @@ const handleInitiatePostProject = async () => {
         setShowProjectDetails(false);
         setSelectedProjectDetails(null);
       };
-    
+
+      // 🟢 LIVE DATA: Listen for real-time project updates over WebSocket
+      useEffect(() => {
+        const handleDataChange = (event) => {
+          const { event_type, project_id, data } = event.detail || {};
+          
+          if (event_type === 'project_updated' && data) {
+            console.log('🟢 Dashboard live project update:', project_id);
+            
+            // Only update if this project belongs to this developer (it's in our list)
+            setProjects(prev => {
+              const exists = prev.some(p => p.id === project_id);
+              if (!exists) return prev; // Not our project, ignore
+              
+              return prev.map(p => 
+                p.id === project_id ? { ...p, ...data } : p
+              );
+            });
+            
+            // If this project is open in the details modal, update it too
+            if (selectedProjectDetails && selectedProjectDetails.id === project_id) {
+              setSelectedProjectDetails(prev => ({ ...prev, ...data }));
+            }
+          }
+          else if (event_type === 'project_deleted' && project_id) {
+            console.log('🟢 Dashboard live project deleted:', project_id);
+            
+            setProjects(prev => prev.filter(p => p.id !== project_id));
+            
+            // Close details modal if it was showing the deleted project
+            if (selectedProjectDetails && selectedProjectDetails.id === project_id) {
+              handleCloseDetails();
+            }
+          }
+        };
+        
+        window.addEventListener('data_change', handleDataChange);
+        return () => window.removeEventListener('data_change', handleDataChange);
+      }, [selectedProjectDetails]);
+  
 
     // Form state for editing
     const [editForm, setEditForm] = useState({

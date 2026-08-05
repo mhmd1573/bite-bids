@@ -162,6 +162,56 @@ useEffect(() => {
     }
   };
 
+  // 🟢 LIVE DATA: Listen for real-time project updates over WebSocket
+  useEffect(() => {
+    const handleDataChange = async (event) => {
+      const { event_type, project_id, data } = event.detail || {};
+      
+      if (event_type === 'project_updated' && data) {
+        console.log('🟢 Live project update received:', project_id);
+        
+        // Update the project card in-place (no refetch, no remount)
+        setProjects(prev => prev.map(p => 
+          p.id === project_id ? { ...p, ...data } : p
+        ));
+        
+        // If this project is currently open in the details modal, update it too
+        if (selectedProjectDetails && selectedProjectDetails.id === project_id) {
+          setSelectedProjectDetails(prev => ({ ...prev, ...data }));
+        }
+      }
+      else if (event_type === 'project_created' && data) {
+        console.log('🟢 Live project created:', project_id);
+        
+        // Fetch full project details (including developer info) for the new project
+        try {
+          const response = await axios.get(`${BACKEND_URL}/api/projects/${project_id}`);
+          // Avoid duplicates in case of rapid events
+          setProjects(prev => {
+            if (prev.some(p => p.id === project_id)) return prev;
+            return [response.data, ...prev];
+          });
+        } catch (error) {
+          console.error('Failed to fetch new project details:', error);
+        }
+      }
+      else if (event_type === 'project_deleted' && project_id) {
+        console.log('🟢 Live project deleted:', project_id);
+        
+        // Remove the project from the list in-place
+        setProjects(prev => prev.filter(p => p.id !== project_id));
+        
+        // Close details modal if it was showing the deleted project
+        if (selectedProjectDetails && selectedProjectDetails.id === project_id) {
+          handleCloseDetails();
+        }
+      }
+    };
+    
+    window.addEventListener('data_change', handleDataChange);
+    return () => window.removeEventListener('data_change', handleDataChange);
+  }, [selectedProjectDetails]);
+
   const fetchPostingCredits = async () => {
   try {
     const token = localStorage.getItem('token');

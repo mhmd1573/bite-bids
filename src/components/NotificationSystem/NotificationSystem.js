@@ -106,6 +106,19 @@ const NotificationSystem = ({ currentUser, handleNotificationPayment }) => {
         message: broadcast.message
       });
     }
+    else if (data.type === 'data_change') {
+      // 📡 Live data change event - dispatch a browser event so components
+      // like Marketplace and Dashboard can update their state in-place
+      console.log('📡 Data change received:', data.event_type, data.project_id);
+      window.dispatchEvent(new CustomEvent('data_change', {
+        detail: {
+          event_type: data.event_type,
+          project_id: data.project_id,
+          data: data.data,
+          timestamp: data.timestamp
+        }
+      }));
+    }
     else if (data.type === 'pong') {
       console.log('🏓 Pong received');
     }
