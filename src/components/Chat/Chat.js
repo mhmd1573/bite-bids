@@ -1732,7 +1732,11 @@ const canDownloadProject = (() => {
 // 4. Fixed-price dispute resolved with refund_investor (no payout, status stays fixed_price)
 //    → detected via hasActiveDispute being false + project status still fixed_price
 //    but a resolved dispute record exists (handled by backend check)
-const isChatReadOnly = hasPayoutRecord || isPayoutActive || hasConfirmedProject || hasAnyPayout || projectData?.status === 'cancelled';
+// ✅ FIXED: For fixed-price projects, only apply hasAnyPayout to developers
+// Investors should only see read-only chat if THEY confirmed, not if another investor confirmed
+const isChatReadOnly = isDeveloper
+  ? hasPayoutRecord || isPayoutActive || hasConfirmedProject || hasAnyPayout || projectData?.status === 'cancelled'
+  : hasPayoutRecord || isPayoutActive || hasConfirmedProject || projectData?.status === 'cancelled';
 
 // Project delivery complete when upload exists
 const projectDeliveryComplete = hasUploadedProject;
