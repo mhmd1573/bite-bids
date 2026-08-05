@@ -1854,10 +1854,6 @@ const handleInitiatePostProject = async () => {
         </div>
       </section>
 
-
-        
-
-
       {/* Project Details Modal */}
       {showProjectDetails && selectedProjectDetails && (
                 <div className="modal-overlay" onClick={handleCloseDetails}>
