@@ -474,24 +474,35 @@ const checkPayoutStatus = async () => {
       const payout = data.payout;
       const currentUserId = currentUser?.id;
       
-      // Only consider this payout if it belongs to the current investor
-      const belongsToCurrentUser = payout && payout.investor_id === currentUserId;
+      // ✅ FIXED: Check payout status differently for developer vs investor
+      // For investors: payout belongs to them
+      // For developers: check if ANY investor in the room confirmed (hasAnyPayout)
+      const isDeveloper = roomData?.developer_id === currentUserId;
       
-      setPendingPayout(payout);
+      let hasPayout = false;
+      let hasPayoutRecord = false;
+      let payoutExists = false;
       
-      const hasPayout = data.has_pending_payout === true && belongsToCurrentUser;
-      const hasPayoutRecord = payout !== null && payout !== undefined && belongsToCurrentUser;
-      const payoutExists = hasPayoutRecord && 
-                         ['pending', 'processing', 'completed'].includes(payout?.status);
+      if (isDeveloper) {
+        // Developer: check if any investor confirmed
+        hasPayout = data.has_any_payout === true;
+        hasPayoutRecord = data.has_any_payout === true;
+        payoutExists = hasPayoutRecord;
+      } else {
+        // Investor: check if THIS investor confirmed
+        const belongsToCurrentUser = payout && payout.investor_id === currentUserId;
+        hasPayout = data.has_pending_payout === true && belongsToCurrentUser;
+        hasPayoutRecord = payout !== null && payout !== undefined && belongsToCurrentUser;
+        payoutExists = hasPayoutRecord && 
+                       ['pending', 'processing', 'completed'].includes(payout?.status);
+      }
       
       const isConfirmed = hasPayout || payoutExists;
       
-      // ✅ Only set hasConfirmedProject if the payout belongs to this investor
+      // ✅ Only set hasConfirmedProject if the payout belongs to this user/room
       setHasConfirmedProject(isConfirmed);
       
-      // ✅ hasAnyPayout: true if ANY payout exists on this project (for developer visibility)
-      // The developer doesn't have their own payout, but needs to see the chat as read-only
-      // when any investor confirms
+      // hasAnyPayout: true if ANY payout exists on this project
       const anyPayout = data.has_any_payout === true;
       setHasAnyPayout(anyPayout);
       
@@ -1705,9 +1716,12 @@ const canShowConfirmButton = (() => {
 // For auction projects: status changes to 'completed'
 // For fixed_price projects: status stays 'fixed_price' but payout record is created
 // The payout record is the source of truth for approval
+// ✅ FIXED: Dispute button hidden when investor confirms (for both parties)
+// When investor clicks confirm, both developer and investor can't open dispute
+// Developer can still dispute with other investors who haven't confirmed
 const canOpenDispute = projectData && (
   ['in_progress', 'fixed_price'].includes(projectData.status)
-) && !hasActiveDispute && projectData.status !== 'completed' && projectData.status !== 'cancelled' && !hasPayoutRecord && !isPayoutActive && !hasConfirmedProject && !hasAnyPayout;
+) && !hasActiveDispute && projectData.status !== 'completed' && projectData.status !== 'cancelled' && !hasPayoutRecord && !isPayoutActive && !hasConfirmedProject;
 
 // Developer can upload project directly to cloud
 const canSubmitRepo = isDeveloper && !hasUploadedProject;
@@ -1724,19 +1738,24 @@ const canDownloadProject = (() => {
   return hasPayoutRecord || isPayoutActive || hasConfirmedProject;
 })();
 
-// ✅ Chat is read-only when project is approved or dispute resolved with final decision
-// Cases that make chat read-only:
-// 1. Payout exists (investor approved or admin resolved with refund_developer)
-// 2. Project status is 'completed' (auction project approved)
-// 3. Project status is 'cancelled' (dispute resolved with refund_investor on auction)
-// 4. Fixed-price dispute resolved with refund_investor (no payout, status stays fixed_price)
-//    → detected via hasActiveDispute being false + project status still fixed_price
-//    but a resolved dispute record exists (handled by backend check)
-// ✅ FIXED: For fixed-price projects, only apply hasAnyPayout to developers
-// Investors should only see read-only chat if THEY confirmed, not if another investor confirmed
-const isChatReadOnly = isDeveloper
-  ? hasPayoutRecord || isPayoutActive || hasConfirmedProject || hasAnyPayout || projectData?.status === 'cancelled'
-  : hasPayoutRecord || isPayoutActive || hasConfirmedProject || projectData?.status === 'cancelled';
+// ✅ Chat is read-only when the investor in this room confirms
+// For fixed-price projects with multiple investors:
+// - Each chat room is between developer + one investor
+// - When THAT investor confirms, chat becomes read-only for BOTH parties
+// - Developer can still chat with other investors in their own rooms
+const isChatReadOnly = (() => {
+  // Always read-only if project is completed or cancelled
+  if (projectData?.status === 'completed' || projectData?.status === 'cancelled') {
+    return true;
+  }
+  
+  // For fixed-price projects: read-only if the investor in THIS room confirmed
+  if (hasPayoutRecord || isPayoutActive || hasConfirmedProject) {
+    return true;
+  }
+  
+  return false;
+})();
 
 // Project delivery complete when upload exists
 const projectDeliveryComplete = hasUploadedProject;
