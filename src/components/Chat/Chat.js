@@ -264,6 +264,21 @@ const getLanguage = (filename) => {
             msg.id === data.message_id ? { ...msg, read: true } : msg
           ));
         }
+        else if (data.type === 'project_uploaded') {
+          // ✅ LIVE UPDATE: Developer uploaded the project
+          // Refresh the project upload so the investor sees it without refreshing
+          console.log('📦 Live: project uploaded → refreshing upload state', data);
+          fetchProjectUpload();
+          fetchProjectDetails();
+        }
+        else if (data.type === 'project_confirmed') {
+          // ✅ LIVE UPDATE: Investor confirmed the project
+          // Refresh payout + project state so the developer sees it without refreshing
+          console.log('✅ Live: project confirmed → refreshing payout state', data);
+          checkPayoutStatus();
+          fetchProjectDetails();
+        }
+
         else if (data.type === 'message_flagged') {
           // Message was flagged by moderation - mark it as flagged
           console.log('🚫 Message flagged received:', data);
