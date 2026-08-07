@@ -484,9 +484,10 @@ const checkPayoutStatus = async () => {
       let payoutExists = false;
       
       if (isDeveloper) {
-        // Developer: check if any investor confirmed
-        hasPayout = data.has_any_payout === true;
-        hasPayoutRecord = data.has_any_payout === true;
+        // Developer: check if the investor in THIS room confirmed
+        // The backend now returns the specific payout for the investor in this room
+        hasPayout = data.has_pending_payout === true;
+        hasPayoutRecord = data.has_pending_payout === true && payout !== null;
         payoutExists = hasPayoutRecord;
       } else {
         // Investor: check if THIS investor confirmed
