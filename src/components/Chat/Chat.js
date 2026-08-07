@@ -470,46 +470,29 @@ const checkPayoutStatus = async () => {
       const data = await response.json();
       console.log('💰 Payout data:', data);
       
-      // ✅ Check if the payout belongs to the current investor
+      // ✅ The backend already determines developer vs investor and returns
+      // the correct payout record:
+      // - Investor: their own payout
+      // - Developer: the investor-in-room's payout
+      // So we trust the backend response without needing React state (roomData)
       const payout = data.payout;
-      const currentUserId = currentUser?.id;
       
-      // ✅ FIXED: Check payout status differently for developer vs investor
-      // For investors: payout belongs to them
-      // For developers: check if ANY investor in the room confirmed (hasAnyPayout)
-      const isDeveloper = roomData?.developer_id === currentUserId;
-      
-      let hasPayout = false;
-      let hasPayoutRecord = false;
-      let payoutExists = false;
-      
-      if (isDeveloper) {
-        // Developer: check if the investor in THIS room confirmed
-        // The backend now returns the specific payout for the investor in this room
-        hasPayout = data.has_pending_payout === true;
-        hasPayoutRecord = data.has_pending_payout === true && payout !== null;
-        payoutExists = hasPayoutRecord;
-      } else {
-        // Investor: check if THIS investor confirmed
-        const belongsToCurrentUser = payout && payout.investor_id === currentUserId;
-        hasPayout = data.has_pending_payout === true && belongsToCurrentUser;
-        hasPayoutRecord = payout !== null && payout !== undefined && belongsToCurrentUser;
-        payoutExists = hasPayoutRecord && 
-                       ['pending', 'processing', 'completed'].includes(payout?.status);
-      }
+      const hasPayout = data.has_pending_payout === true;
+      const hasPayoutRecord = hasPayout && payout !== null;
+      const payoutExists = hasPayoutRecord && 
+                         ['pending', 'processing', 'completed'].includes(payout?.status);
       
       const isConfirmed = hasPayout || payoutExists;
       
-      // ✅ Only set hasConfirmedProject if the payout belongs to this user/room
+      // ✅ Set confirmation state directly from backend response
       setHasConfirmedProject(isConfirmed);
+      setPendingPayout(payout);
       
       // hasAnyPayout: true if ANY payout exists on this project
       const anyPayout = data.has_any_payout === true;
       setHasAnyPayout(anyPayout);
       
-      console.log(`📊 Payout exists for current investor: ${isConfirmed}, status: ${payout?.status || 'none'}`);
-      console.log(`📊 Payout belongs to current user: ${belongsToCurrentUser}`);
-      console.log(`📊 Any payout on project: ${anyPayout}`);
+      console.log(`📊 Payout confirmed: ${isConfirmed}, status: ${payout?.status || 'none'}`);
       
       return isConfirmed || anyPayout;
     } else {
