@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { loadStripe } from '@stripe/stripe-js';
 
 // Ensure axios is available globally for OAuth callback processing
 if (typeof window !== 'undefined') {
@@ -48,8 +47,6 @@ import AdminPayouts from './components/AdminPayouts/AdminPayouts';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-const stripePublishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '';
-const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 
 const PLATFORM_FEE_PERCENTAGE = 6; // 6% platform fee
@@ -835,10 +832,8 @@ useEffect(() => {
       markPaymentStep('fees');
     }
 
-    const isStripeCheckout = paymentForm.payment_method === 'credit_card';
-    const endpoint = isStripeCheckout
-      ? `${BACKEND_URL}/api/payments/stripe/create-checkout-session`
-      : `${BACKEND_URL}/api/payments/create-checkout-session`;
+    // All card payments now use Payoneer
+    const endpoint = `${BACKEND_URL}/api/payments/payoneer/create-checkout-session`;
 
     try {
       const response = await axios.post(endpoint, paymentRequest, {
@@ -859,38 +854,9 @@ useEffect(() => {
         return;
       }
 
-      // ✅ STRIPE CHECKOUT FLOW
-      if (isStripeCheckout) {
-        if (!stripePromise) {
-          showNotification('error', 'Payment Error', 'Stripe is not configured. Please contact support.');
-          return;
-        }
-
-        const stripe = await stripePromise;
-        if (!stripe) {
-          showNotification('error', 'Payment Error', 'Unable to initialize Stripe. Please try again later.');
-          return;
-        }
-
-        const sessionId = response.data.session_id;
-        if (!sessionId) {
-          showNotification('error', 'Payment Error', 'Missing Stripe checkout session information. Please contact support.');
-          return;
-        }
-
-        // ✅ This will redirect to Stripe's hosted checkout page
-        const { error } = await stripe.redirectToCheckout({ sessionId });
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        // User will be redirected back after payment
-        return;
-      }
-
-      // ✅ OTHER PAYMENT METHODS (2Checkout, etc.)
-      if (response.data.payment_url) {
-        console.log('Redirecting to payment URL:', response.data.payment_url);
+      // ✅ PAYONEER CHECKOUT FLOW - Redirect to Payoneer hosted payment page
+      if (response.data.redirect_url) {
+        console.log('Redirecting to Payoneer:', response.data.redirect_url);
 
         const paymentType = selectedItem.orderType === 'auction' ? 'auction win' : 'marketplace purchase';
         const confirmed = window.confirm(
@@ -902,7 +868,7 @@ useEffect(() => {
         );
 
         if (confirmed) {
-          window.open(response.data.payment_url, '_blank');
+          window.open(response.data.redirect_url, '_blank');
           notifyPaymentCompletion();
           handlePaymentDialogChange(false);
 
@@ -912,7 +878,7 @@ useEffect(() => {
         showNotification(
           'error',
           'Payment Error',
-          'Payment session created successfully, but no payment URL was provided. Please contact support.'
+          'Payment session created successfully, but no redirect URL was provided. Please contact support.'
         );
         notifyPaymentCompletion();
         handlePaymentDialogChange(false);

@@ -69,12 +69,12 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-## Stripe configuration
+## Payoneer configuration
 
-The payment modal now uses Stripe Checkout for card transactions. Provide the following environment variables before running the app:
+The payment modal now uses Payoneer Checkout for card transactions. Provide the following environment variables before running the app:
 
-- Frontend `.env`: `REACT_APP_STRIPE_PUBLISHABLE_KEY`
-- Backend `.env`: `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`
+- Frontend `.env`: No Payoneer-specific variables needed
+- Backend `.env`: `PAYONEER_API_BASE_URL`, `PAYONEER_AUTH_TOKEN`, `PAYONEER_DIVISION`, `PAYONEER_COUNTRY`, `PAYONEER_WEBHOOK_SECRET`
 
 After updating the env files, install the new dependencies:
 

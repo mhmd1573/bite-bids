@@ -639,7 +639,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        `${BACKEND_URL}/api/payments/stripe/create-checkout-session`,
+        `${BACKEND_URL}/api/payments/payoneer/create-checkout-session`,
         {
           order_type: 'fixed',
           item_id: selectedProjectDetails.id,
@@ -658,10 +658,10 @@ useEffect(() => {
         }
       );
 
-      if (response.data.checkout_url) {
-        window.location.href = response.data.checkout_url;
+      if (response.data.redirect_url) {
+        window.open(response.data.redirect_url, '_blank');
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('No redirect URL received');
       }
 
     } catch (error) {
