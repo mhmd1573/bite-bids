@@ -277,6 +277,7 @@ const getLanguage = (filename) => {
           console.log('✅ Live: project confirmed → refreshing payout state', data);
           checkPayoutStatus();
           fetchProjectDetails();
+          fetchMessages();  // Refresh to show the new system message
         }
 
         else if (data.type === 'message_flagged') {
