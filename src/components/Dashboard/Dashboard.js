@@ -160,34 +160,30 @@ const Dashboard = ({ user, navigateToPage }) => {
           }
         }, [user]);
 
-  
-
-// ✅ NEW: Check for payment success from Stripe
-useEffect(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const sessionId = urlParams.get('session_id');
-  const paymentStatus = urlParams.get('payment_status');
-  
-  if (sessionId && paymentStatus === 'success') {
-    // Payment successful - refresh credits and show success
-    fetchPostingCredits();
-    showNotificationModal(
-      'success', 
-      'Payment Successful!', 
-      'Your posting credit has been added. You can now create your project!'
-    );
-    
-    // Open post dialog after a short delay
-    setTimeout(() => {
-      setShowPostDialog(true);
-    }, 2000);
-    
-    // Clean URL
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-}, []);
-
-
+      // ✅ NEW: Check for payment success from Stripe
+      useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        const paymentStatus = urlParams.get('payment_status');
+        
+        if (sessionId && paymentStatus === 'success') {
+          // Payment successful - refresh credits and show success
+          fetchPostingCredits();
+          showNotificationModal(
+            'success', 
+            'Payment Successful!', 
+            'Your posting credit has been added. You can now create your project!'
+          );
+          
+          // Open post dialog after a short delay
+          setTimeout(() => {
+            setShowPostDialog(true);
+          }, 2000);
+          
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }, []);
 
 
     const notificationActivity = notifications.map((n) => ({
@@ -199,15 +195,13 @@ useEffect(() => {
     rating: n.rating || null,
       }));
 
-      const categories = [
+    const categories = [
         { id: 'all', label: 'All Projects', icon: Code },
         { id: 'Machine Learning', label: 'Machine Learning', icon: Zap },
         { id: 'Natural Language Processing', label: 'Natural Language Processing', icon: Users },
         { id: 'Computer Vision', label: 'Computer Vision', icon: Award },
         { id: 'Automation', label: 'Automation', icon: TrendingUp },
       ];
-
-
 
     // Dynamic stats based on user data
     const stats = userData ? {
@@ -425,7 +419,6 @@ const handleInitiatePostProject = async () => {
 
 };
 
-
     // Fetch current user data
     const fetchCurrentUser = async () => {
       try {
@@ -517,14 +510,14 @@ const handleInitiatePostProject = async () => {
         status: 'open'
       });
 
-   const techStackOptions = [
-    'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
-    'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'Pandas', 'NumPy',
-    'React', 'Vue.js', 'Angular', 'Node.js', 'Express', 'Django', 'Flask', 'FastAPI',
-    'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch',
-    'AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes',
-    'Git', 'CI/CD', 'GraphQL', 'REST API', 'Microservices'
-    ];
+    const techStackOptions = [
+      'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
+      'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'Pandas', 'NumPy',
+      'React', 'Vue.js', 'Angular', 'Node.js', 'Express', 'Django', 'Flask', 'FastAPI',
+      'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch',
+      'AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes',
+      'Git', 'CI/CD', 'GraphQL', 'REST API', 'Microservices'
+      ];
   
     // Location options
     const locationOptions = [
@@ -847,7 +840,7 @@ const handleInitiatePostProject = async () => {
   } finally {
     setLoading(false);
   }
-};
+      };
 
 
       // Handle Close Bidding
