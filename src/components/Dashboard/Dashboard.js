@@ -74,6 +74,12 @@ const Dashboard = ({ user, navigateToPage }) => {
       // Post Project states
       const [showPostDialog, setShowPostDialog] = useState(false);
       const [postLoading, setPostLoading] = useState(false);
+      const [postPaymentBillingAddress, setPostPaymentBillingAddress] = useState({
+            street: '',
+            city: '',
+            zip: '',
+            country: 'US'
+      });
       const [projectForm, setProjectForm] = useState({
             title: '',
             description: '',
@@ -345,15 +351,21 @@ const removeEditImage = (index) => {
 
 // ✅ NEW: Initiate payment for posting project
 const handleInitiatePostProject = async () => {
+  if (!postPaymentBillingAddress.street || !postPaymentBillingAddress.city || !postPaymentBillingAddress.zip) {
+    showNotificationModal('error', 'Billing Address Required', 'Please fill in your street, city and zip/postal code before proceeding to payment.');
+    return;
+  }
+
   try {
     setPostLoading(true);
     const token = localStorage.getItem('token');
-    
+
     const response = await axios.post(
       `${BACKEND_URL}/api/payments/payoneer/create-post-project-session`,
       {
         customer_email: user.email,
-        customer_name: user.name
+        customer_name: user.name,
+        billing_address: postPaymentBillingAddress
       },
       {
         headers: {
@@ -2216,7 +2228,43 @@ const handleInitiatePostProject = async () => {
                                 <p style={{ fontSize: '1.125rem', color: '#64748b', marginBottom: '1.5rem' }}>
                                   To post a project, you need to pay a one-time fee of <strong style={{ color: '#6366f1' }}>$0.99</strong>
                                 </p>
-                                <button 
+
+                                {/* Billing address required by Payoneer Checkout for the payment session */}
+                                <div style={{ textAlign: 'left', maxWidth: '420px', margin: '0 auto 1.5rem', display: 'grid', gap: '0.75rem' }}>
+                                  <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="Street address"
+                                    value={postPaymentBillingAddress.street}
+                                    onChange={(e) => setPostPaymentBillingAddress(prev => ({ ...prev, street: e.target.value }))}
+                                  />
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                    <input
+                                      type="text"
+                                      className="form-input"
+                                      placeholder="City"
+                                      value={postPaymentBillingAddress.city}
+                                      onChange={(e) => setPostPaymentBillingAddress(prev => ({ ...prev, city: e.target.value }))}
+                                    />
+                                    <input
+                                      type="text"
+                                      className="form-input"
+                                      placeholder="Zip / Postal code"
+                                      value={postPaymentBillingAddress.zip}
+                                      onChange={(e) => setPostPaymentBillingAddress(prev => ({ ...prev, zip: e.target.value }))}
+                                    />
+                                  </div>
+                                  <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="Country code (e.g. US)"
+                                    maxLength={2}
+                                    value={postPaymentBillingAddress.country}
+                                    onChange={(e) => setPostPaymentBillingAddress(prev => ({ ...prev, country: e.target.value.toUpperCase() }))}
+                                  />
+                                </div>
+
+                                <button
                                   className="btn btn-primary"
                                   style={{ marginTop: '1rem' }}
                                   onClick={handleInitiatePostProject}
