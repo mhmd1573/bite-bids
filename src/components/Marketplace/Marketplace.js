@@ -319,7 +319,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        `${BACKEND_URL}/api/payments/create-post-project-session`,
+        `${BACKEND_URL}/api/payments/payoneer/create-post-project-session`,
         {
           customer_email: user.email,
           customer_name: user.name

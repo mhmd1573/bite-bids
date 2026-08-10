@@ -185,7 +185,7 @@ useEffect(() => {
   
 
   if (window.location.pathname === '/payment/success' && sessionId) {
-  axios.get(`${BACKEND_URL}/api/payments/stripe/verify-session/${sessionId}`, {
+  axios.get(`${BACKEND_URL}/api/payments/payoneer/verify-session/${sessionId}`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   }).then(async response => {
     if (response.data.success) {
