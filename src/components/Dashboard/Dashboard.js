@@ -126,7 +126,7 @@ const Dashboard = ({ user, navigateToPage }) => {
         if (!user) return;
 
         try {
-          const response = await fetch(`http://localhost:8001/api/notifications/${user.id}`);
+          const response = await fetch(`${BACKEND_URL}/api/notifications/${user.id}`);
           if (response.ok) {
             const data = await response.json();
             setNotifications(data.notifications || []);
@@ -220,155 +220,155 @@ const Dashboard = ({ user, navigateToPage }) => {
       onTimeDelivery: 0,
     };
 
-// ✅ NEW: Handle image upload (for new projects)
-const handleImageUpload = async (e) => {
-  const files = Array.from(e.target.files);
-  
-  if (selectedImages.length + files.length > 5) {
-    showNotificationModal('error', 'Too Many Images', 'You can upload a maximum of 5 images.');
-    return;
-  }
+    // ✅ NEW: Handle image upload (for new projects)
+    const handleImageUpload = async (e) => {
+      const files = Array.from(e.target.files);
+      
+      if (selectedImages.length + files.length > 5) {
+        showNotificationModal('error', 'Too Many Images', 'You can upload a maximum of 5 images.');
+        return;
+      }
 
-  for (const file of files) {
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      showNotificationModal('error', 'Invalid File Type', 'Only JPEG and PNG images are allowed.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showNotificationModal('error', 'File Too Large', 'Each image must be less than 5MB.');
-      return;
-    }
-  }
-
-  const imagePromises = files.map(file => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve({
-        file: file,
-        preview: e.target.result,
-        name: file.name
-      });
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  });
-
-  try {
-    const images = await Promise.all(imagePromises);
-    setSelectedImages(prev => [...prev, ...images]);
-  } catch (error) {
-    showNotificationModal('error', 'Upload Failed', 'Failed to upload images. Please try again.');
-  }
-};
-
-// ✅ NEW: Handle image upload for editing
-const handleEditImageUpload = async (e) => {
-  const files = Array.from(e.target.files);
-  const currentImageCount = (editForm.images || []).length + editImages.length;
-  
-  if (currentImageCount + files.length > 5) {
-    showNotificationModal('error', 'Too Many Images', 'You can upload a maximum of 5 images.');
-    return;
-  }
-
-  for (const file of files) {
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      showNotificationModal('error', 'Invalid File Type', 'Only JPEG and PNG images are allowed.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showNotificationModal('error', 'File Too Large', 'Each image must be less than 5MB.');
-      return;
-    }
-  }
-
-  const imagePromises = files.map(file => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve({
-        file: file,
-        preview: e.target.result,
-        name: file.name
-      });
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  });
-
-  try {
-    const images = await Promise.all(imagePromises);
-    setEditImages(prev => [...prev, ...images]);
-  } catch (error) {
-    showNotificationModal('error', 'Upload Failed', 'Failed to upload images. Please try again.');
-  }
-};
-
-// ✅ NEW: Remove image (for new projects)
-const removeImage = (index) => {
-  setSelectedImages(prev => prev.filter((_, i) => i !== index));
-};
-
-// ✅ NEW: Remove existing image (for editing)
-const removeExistingImage = (index) => {
-  const totalImages = (editForm.images || []).length + editImages.length;
-  
-  // Prevent removing the last image
-  if (totalImages <= 1) {
-    showNotificationModal('error', 'Cannot Remove', 'You must keep at least one image.');
-    return;
-  }
-  
-  setEditForm(prev => ({
-    ...prev,
-    images: prev.images.filter((_, i) => i !== index)
-  }));
-};
-
-// ✅ NEW: Remove new image (for editing)
-const removeEditImage = (index) => {
-  const totalImages = (editForm.images || []).length + editImages.length;
-  
-  // Prevent removing the last image
-  if (totalImages <= 1) {
-    showNotificationModal('error', 'Cannot Remove', 'You must keep at least one image.');
-    return;
-  }
-  
-  setEditImages(prev => prev.filter((_, i) => i !== index));
-};
-
-// ✅ NEW: Initiate payment for posting project
-const handleInitiatePostProject = async () => {
-  try {
-    setPostLoading(true);
-    const token = localStorage.getItem('token');
-
-    const response = await axios.post(
-      `${BACKEND_URL}/api/payments/create-post-project-session`,
-      {
-        customer_email: user.email,
-        customer_name: user.name
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      for (const file of files) {
+        if (!['image/jpeg', 'image/png'].includes(file.type)) {
+          showNotificationModal('error', 'Invalid File Type', 'Only JPEG and PNG images are allowed.');
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          showNotificationModal('error', 'File Too Large', 'Each image must be less than 5MB.');
+          return;
         }
       }
-    );
 
-    if (response.data.success && response.data.checkout_url) {
-      window.location.href = response.data.checkout_url;
-    } else {
-      showNotificationModal('error', 'Payment Error', 'Failed to create payment session.');
-    }
-  } catch (error) {
-    console.error('Payment initiation error:', error);
-    showNotificationModal('error', 'Payment Error', error.response?.data?.detail || 'Failed to initiate payment.');
-  } finally {
-    setPostLoading(false);
-  }
-};
+      const imagePromises = files.map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve({
+            file: file,
+            preview: e.target.result,
+            name: file.name
+          });
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
+
+      try {
+        const images = await Promise.all(imagePromises);
+        setSelectedImages(prev => [...prev, ...images]);
+      } catch (error) {
+        showNotificationModal('error', 'Upload Failed', 'Failed to upload images. Please try again.');
+      }
+    };
+
+    // ✅ NEW: Handle image upload for editing
+    const handleEditImageUpload = async (e) => {
+      const files = Array.from(e.target.files);
+      const currentImageCount = (editForm.images || []).length + editImages.length;
+      
+      if (currentImageCount + files.length > 5) {
+        showNotificationModal('error', 'Too Many Images', 'You can upload a maximum of 5 images.');
+        return;
+      }
+
+      for (const file of files) {
+        if (!['image/jpeg', 'image/png'].includes(file.type)) {
+          showNotificationModal('error', 'Invalid File Type', 'Only JPEG and PNG images are allowed.');
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          showNotificationModal('error', 'File Too Large', 'Each image must be less than 5MB.');
+          return;
+        }
+      }
+
+      const imagePromises = files.map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve({
+            file: file,
+            preview: e.target.result,
+            name: file.name
+          });
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
+
+      try {
+        const images = await Promise.all(imagePromises);
+        setEditImages(prev => [...prev, ...images]);
+      } catch (error) {
+        showNotificationModal('error', 'Upload Failed', 'Failed to upload images. Please try again.');
+      }
+    };
+
+    // ✅ NEW: Remove image (for new projects)
+    const removeImage = (index) => {
+      setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // ✅ NEW: Remove existing image (for editing)
+    const removeExistingImage = (index) => {
+      const totalImages = (editForm.images || []).length + editImages.length;
+      
+      // Prevent removing the last image
+      if (totalImages <= 1) {
+        showNotificationModal('error', 'Cannot Remove', 'You must keep at least one image.');
+        return;
+      }
+      
+      setEditForm(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index)
+      }));
+    };
+
+    // ✅ NEW: Remove new image (for editing)
+    const removeEditImage = (index) => {
+      const totalImages = (editForm.images || []).length + editImages.length;
+      
+      // Prevent removing the last image
+      if (totalImages <= 1) {
+        showNotificationModal('error', 'Cannot Remove', 'You must keep at least one image.');
+        return;
+      }
+      
+      setEditImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // ✅ NEW: Initiate payment for posting project
+    const handleInitiatePostProject = async () => {
+      try {
+        setPostLoading(true);
+        const token = localStorage.getItem('token');
+
+        const response = await axios.post(
+          `${BACKEND_URL}/api/payments/create-post-project-session`,
+          {
+            customer_email: user.email,
+            customer_name: user.name
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (response.data.success && response.data.checkout_url) {
+          window.location.href = response.data.checkout_url;
+        } else {
+          showNotificationModal('error', 'Payment Error', 'Failed to create payment session.');
+        }
+      } catch (error) {
+        console.error('Payment initiation error:', error);
+        showNotificationModal('error', 'Payment Error', error.response?.data?.detail || 'Failed to initiate payment.');
+      } finally {
+        setPostLoading(false);
+      }
+    };
 
   const fetchPostingCredits = async () => {
   try {
@@ -388,7 +388,7 @@ const handleInitiatePostProject = async () => {
   } catch (error) {
     console.error('Error fetching posting credits:', error);
   }
-};
+    };
 
     // Fetch projects from backend
    const fetchProjects = async () => {
