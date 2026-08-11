@@ -40,8 +40,11 @@ const NotificationSystem = ({ currentUser, handleNotificationPayment }) => {
   const connectWebSocket = () => {
     if (!currentUser) return;
 
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
     try {
-      const ws = new WebSocket(`${WS_URL}/ws/notifications/${currentUser.id}`);
+      const ws = new WebSocket(`${WS_URL}/ws/notifications/${currentUser.id}?token=${encodeURIComponent(token)}`);
 
       ws.onopen = () => {
         console.log('✅ Connected to notification WebSocket');
@@ -65,9 +68,16 @@ const NotificationSystem = ({ currentUser, handleNotificationPayment }) => {
       const payload = {
         total_unread_count: data.total_unread_count || 0,
         room_id: data.room_id,
-        room_unread_count: data.room_unread_count
+        room_unread_count: data.room_unread_count,
+        updated_at: data.updated_at
       };
       window.dispatchEvent(new CustomEvent('chat_unread_count', { detail: payload }));
+    }
+    else if (data.type === 'chat_room_created') {
+      // 📡 A new chat room was created for this user - let the chats list refetch live
+      window.dispatchEvent(new CustomEvent('chat_room_created', {
+        detail: { room_id: data.room_id, project_id: data.project_id }
+      }));
     }
     else if (data.type === 'notification') {
       const newNotif = data.data;

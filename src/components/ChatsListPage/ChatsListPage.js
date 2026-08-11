@@ -255,14 +255,27 @@ const ChatsListPage = ({ currentUser, navigateToChat }) => {
       setChatRooms(prevRooms =>
         prevRooms.map(room =>
           room.id === detail.room_id
-            ? { ...room, unreadCount: detail.room_unread_count ?? room.unreadCount }
+            ? {
+                ...room,
+                unreadCount: detail.room_unread_count ?? room.unreadCount,
+                updated_at: detail.updated_at ?? room.updated_at
+              }
             : room
         )
       );
     };
 
+    // A brand-new chat room was created for this user - refetch so it appears live
+    const handleRoomCreated = () => {
+      fetchChatRooms();
+    };
+
     window.addEventListener('chat_unread_count', handleUnreadUpdate);
-    return () => window.removeEventListener('chat_unread_count', handleUnreadUpdate);
+    window.addEventListener('chat_room_created', handleRoomCreated);
+    return () => {
+      window.removeEventListener('chat_unread_count', handleUnreadUpdate);
+      window.removeEventListener('chat_room_created', handleRoomCreated);
+    };
   }, []);
 
   const fetchChatRooms = async () => {

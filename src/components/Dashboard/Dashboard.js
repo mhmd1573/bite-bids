@@ -450,8 +450,17 @@ const handleInitiatePostProject = async () => {
       useEffect(() => {
         const handleDataChange = (event) => {
           const { event_type, project_id, data } = event.detail || {};
-          
-          if (event_type === 'project_updated' && data) {
+
+          if (event_type === 'project_created' && data && data.developer_id === user.id) {
+            console.log('🟢 Dashboard live project created:', project_id);
+
+            // Avoid duplicates in case of rapid events (e.g. own POST already added it)
+            setProjects(prev => {
+              if (prev.some(p => p.id === project_id)) return prev;
+              return [data, ...prev];
+            });
+          }
+          else if (event_type === 'project_updated' && data) {
             console.log('🟢 Dashboard live project update:', project_id);
             
             // Only update if this project belongs to this developer (it's in our list)

@@ -26,6 +26,20 @@ const AdminDisputes = () => {
     fetchDisputes();
   }, []);
 
+  // 🟢 LIVE DATA: refresh while this tab stays mounted (new dispute, or another
+  // admin resolving one) instead of only picking up changes on next tab visit.
+  useEffect(() => {
+    const handleDataChange = (event) => {
+      const { event_type } = event.detail || {};
+      if (event_type === 'admin_update' || event_type === 'project_updated') {
+        fetchDisputes();
+      }
+    };
+
+    window.addEventListener('data_change', handleDataChange);
+    return () => window.removeEventListener('data_change', handleDataChange);
+  }, []);
+
   const fetchDisputes = async () => {
     try {
       setLoading(true);

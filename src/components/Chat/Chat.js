@@ -208,8 +208,11 @@ const getLanguage = (filename) => {
     const maxReconnectAttempts = 5;
 
     const connectWebSocket = () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
       const ws = new WebSocket(
-        `${WS_URL}/ws/chat/${roomId}/${currentUser.id}`
+        `${WS_URL}/ws/chat/${roomId}/${currentUser.id}?token=${encodeURIComponent(token)}`
       );
 
       ws.onopen = () => {
