@@ -154,18 +154,19 @@ const Dashboard = ({ user, navigateToPage }) => {
           }
         }, [user]);
 
-      // ✅ NEW: Check for payment success from Stripe
+      // ✅ NEW: Check for payment success (Stripe) or Dodo redirect
       useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
         const paymentStatus = urlParams.get('payment_status');
+        const provider = urlParams.get('provider');
         
-        if (sessionId && paymentStatus === 'success') {
+        if ((sessionId && paymentStatus === 'success') || provider === 'dodo') {
           // Payment successful - refresh credits and show success
           fetchPostingCredits();
           showNotificationModal(
-            'success', 
-            'Payment Successful!', 
+            'success',
+            'Payment Successful!',
             'Your posting credit has been added. You can now create your project!'
           );
           
@@ -344,7 +345,7 @@ const Dashboard = ({ user, navigateToPage }) => {
         const token = localStorage.getItem('token');
 
         const response = await axios.post(
-          `${BACKEND_URL}/api/payments/create-post-project-session`,
+          `${BACKEND_URL}/api/payments/dodo/create-post-project-session`,
           {
             customer_email: user.email,
             customer_name: user.name

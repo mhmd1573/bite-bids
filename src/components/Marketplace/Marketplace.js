@@ -137,8 +137,9 @@ const Marketplace = ({ user }) => {
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const paymentStatus = params.get('payment_status');
+  const provider = params.get('provider');
 
-  if (paymentStatus === 'success') {
+  if (paymentStatus === 'success' || provider === 'dodo') {
     fetchPostingCredits();
 
     showNotificationModal(
@@ -319,7 +320,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
 
       const response = await axios.post(
-        `${BACKEND_URL}/api/payments/create-post-project-session`,
+        `${BACKEND_URL}/api/payments/dodo/create-post-project-session`,
         {
           customer_email: user.email,
           customer_name: user.name

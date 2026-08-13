@@ -179,45 +179,47 @@ const navigateBackToAdminChats = () => {
 useEffect(() => {
   const urlParams = new URLSearchParams(window.location.search);
   const sessionId = urlParams.get('session_id');
-  
+  const provider = urlParams.get('provider');
 
   if (window.location.pathname === '/payment/success' && sessionId) {
-  axios.get(`${BACKEND_URL}/api/payments/stripe/verify-session/${sessionId}`, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-  }).then(async response => {
-    if (response.data.success) {
-      const projectId = response.data.project_id;
-      showNotification('success', 'Payment Completed', 'You can now start chatting with the developer.');
-      
-      // Wait for webhook to create room
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      try {
-        const chatResponse = await axios.get(
-          `${BACKEND_URL}/api/chat/rooms`,
-          { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-        );
+    axios.get(`${BACKEND_URL}/api/payments/stripe/verify-session/${sessionId}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    }).then(async response => {
+      if (response.data.success) {
+        const projectId = response.data.project_id;
+        showNotification('success', 'Payment Completed', 'You can now start chatting with the developer.');
         
-        const chatRoom = chatResponse.data.find(room => room.project_id === projectId);
+        // Wait for webhook to create room
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        if (chatRoom) {
-          setCurrentPage('chat');
-          window.history.replaceState({}, '', `/chat/${chatRoom.id}`);
-        } else {
-          showNotification('info', 'Chat Room', 'Chat room is being created.');
+        try {
+          const chatResponse = await axios.get(
+            `${BACKEND_URL}/api/chat/rooms`,
+            { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+          );
+          
+          const chatRoom = chatResponse.data.find(room => room.project_id === projectId);
+          
+          if (chatRoom) {
+            setCurrentPage('chat');
+            window.history.replaceState({}, '', `/chat/${chatRoom.id}`);
+          } else {
+            showNotification('info', 'Chat Room', 'Chat room is being created.');
+            setCurrentPage('chats');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          showNotification('info', 'Redirecting', 'Taking you to your chats...');
           setCurrentPage('chats');
         }
-      } catch (error) {
-        console.error('Error:', error);
-        showNotification('info', 'Redirecting', 'Taking you to your chats...');
-        setCurrentPage('chats');
       }
-    }
-  });
-}
-
-  
-  else if (window.location.pathname === '/payment/cancel') {
+    });
+  } else if (window.location.pathname === '/payment/success' && provider === 'dodo') {
+    // Dodo Checkout redirect success (webhook will fulfill and create rooms)
+    showNotification('success', 'Payment Completed', 'We are finalizing your order. You can check your chats.');
+    setCurrentPage('chats');
+    window.history.replaceState({}, '', '/chats');
+  } else if (window.location.pathname === '/payment/cancel') {
     showNotification('info', 'Payment Canceled', 'Payment was canceled.');
     setCurrentPage('dashboard');
     window.history.replaceState({}, '', '/home');
@@ -829,8 +831,11 @@ useEffect(() => {
       markPaymentStep('fees');
     }
 
-    // All card payments now use Stripe
-    const endpoint = `${BACKEND_URL}/api/payments/stripe/create-checkout-session`;
+    // All card payments default to Stripe; enable Dodo via feature flag
+    const USE_DODO_INVESTOR = (process.env.REACT_APP_USE_DODO_INVESTOR === 'true');
+    const endpoint = USE_DODO_INVESTOR
+      ? `${BACKEND_URL}/api/payments/dodo/create-checkout-session`
+      : `${BACKEND_URL}/api/payments/stripe/create-checkout-session`;
 
     try {
       const response = await axios.post(endpoint, paymentRequest, {
