@@ -2173,34 +2173,6 @@ const Dashboard = ({ user, navigateToPage }) => {
               </button>
             </div>
 
-            {/* ✅ NEW: Credits Status Indicator */}
-            <div style={{
-              padding: '0.75rem 1.5rem',
-              background: postingCredits > 0 
-                ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)'
-                : 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)',
-              borderBottom: postingCredits > 0 ? '2px solid #22c55e' : '2px solid #ef4444',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              justifyContent: 'center'
-            }}>
-              {postingCredits > 0 ? (
-                <>
-                  <CheckCircle2 style={{ width: '20px', height: '20px', color: '#22c55e' }} />
-                  <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.875rem' }}>
-                    You have {postingCredits} posting credit{postingCredits !== 1 ? 's' : ''} available
-                  </span>
-                </>
-              ) : (
-                <>
-                  {/* <AlertCircle style={{ width: '20px', height: '20px', color: '#ef4444' }} />
-                  <span style={{ color: '#dc2626', fontWeight: 600, fontSize: '0.875rem' }}>
-                    No posting credits - Purchase required
-                  </span> */}
-                </>
-              )}
-            </div>
 
             <form onSubmit={handlePostProject}>
                <div className="modal-body">
