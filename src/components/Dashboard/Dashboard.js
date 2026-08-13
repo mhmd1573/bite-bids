@@ -2194,10 +2194,10 @@ const Dashboard = ({ user, navigateToPage }) => {
                 </>
               ) : (
                 <>
-                  <AlertCircle style={{ width: '20px', height: '20px', color: '#ef4444' }} />
+                  {/* <AlertCircle style={{ width: '20px', height: '20px', color: '#ef4444' }} />
                   <span style={{ color: '#dc2626', fontWeight: 600, fontSize: '0.875rem' }}>
                     No posting credits - Purchase required
-                  </span>
+                  </span> */}
                 </>
               )}
             </div>

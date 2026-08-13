@@ -74,7 +74,7 @@ const Marketplace = ({ user }) => {
   const [uploadingImages, setUploadingImages] = useState(false);
 
 
-    // ✅ NEW
+  // ✅ NEW
   const [postingCredits, setPostingCredits] = useState(0);
   const [checkingCredits, setCheckingCredits] = useState(false);
 
@@ -98,8 +98,6 @@ const Marketplace = ({ user }) => {
     showNotification(type, title, message);
   };
 
-  
-  
   // Tech stack options
   const techStackOptions = [
     'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
@@ -126,33 +124,32 @@ const Marketplace = ({ user }) => {
   useEffect(() => {
     fetchProjects();
   }, []);
-
   
   useEffect(() => {
   if (user?.role === 'developer') {
     fetchPostingCredits();
   }
-}, [user]);
+  }, [user]);
 
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const paymentStatus = params.get('payment_status');
-  const provider = params.get('provider');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment_status');
+    const provider = params.get('provider');
 
-  if (paymentStatus === 'success' || provider === 'dodo') {
-    fetchPostingCredits();
+    if (paymentStatus === 'success' || provider === 'dodo') {
+      fetchPostingCredits();
 
-    showNotificationModal(
-      'success',
-      'Payment Successful',
-      'Posting credit added successfully'
-    );
+      showNotificationModal(
+        'success',
+        'Payment Successful',
+        'Posting credit added successfully'
+      );
 
-    setTimeout(() => setShowPostDialog(true), 1500);
+      setTimeout(() => setShowPostDialog(true), 1500);
 
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-}, []);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
 
   // Fetch projects function
@@ -514,8 +511,6 @@ useEffect(() => {
       tech_stack: prev.tech_stack.filter(t => t !== tech)
     }));
   };
-
-
 
   // Handle bid form changes
   const handleBidFormChange = (field, value) => {
