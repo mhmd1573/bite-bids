@@ -640,7 +640,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        `${BACKEND_URL}/api/payments/stripe/create-checkout-session`,
+        `${BACKEND_URL}/api/payments/dodo/create-checkout-session`,
         {
           order_type: 'fixed',
           item_id: selectedProjectDetails.id,

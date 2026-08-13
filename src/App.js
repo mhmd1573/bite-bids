@@ -835,7 +835,7 @@ useEffect(() => {
     const USE_DODO_INVESTOR = (process.env.REACT_APP_USE_DODO_INVESTOR === 'true');
     const endpoint = USE_DODO_INVESTOR
       ? `${BACKEND_URL}/api/payments/dodo/create-checkout-session`
-      : `${BACKEND_URL}/api/payments/stripe/create-checkout-session`;
+      : `${BACKEND_URL}/api/payments/dodo/create-checkout-session`;
 
     try {
       const response = await axios.post(endpoint, paymentRequest, {
