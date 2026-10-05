@@ -28,6 +28,10 @@ import DashboardAdmin from './components/DashboardAdmin/DashboardAdmin';
 import Login from './components/Login/Login';
 import About from './components/About/About';
 import Contact from './components/Contact/Contact';
+import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
+import Terms from './components/Terms/Terms';
+import Returns from './components/Returns/Returns';
+import Footer from './components/Footer/Footer';
 import Profile from './components/Profile/Profile'
 import VerifyEmail from './components/VerifyEmail/VerifyEmail';
 import ChatPage from './components/ChatPage/ChatPage';
@@ -438,6 +442,12 @@ useEffect(() => {
         setCurrentPage('about');
       } else if (path === '/contact') {
         setCurrentPage('contact');
+      } else if (path === '/terms') {
+        setCurrentPage('terms');
+      } else if (path === '/privacy') {
+        setCurrentPage('privacy');
+      } else if (path === '/returns') {
+        setCurrentPage('returns');
       } else if (path === '/chats') {
         setCurrentPage('chats');
       } else {
@@ -479,6 +489,9 @@ useEffect(() => {
           'about',
           'profile',
           'contact',
+          'terms',
+          'privacy',
+          'returns',
           'admin',
           'oauth-config',
           'profile'
@@ -831,10 +844,17 @@ useEffect(() => {
       markPaymentStep('fees');
     }
 
-    // All card payments default to Stripe; enable Dodo via feature flag
-    const USE_DODO_INVESTOR = (process.env.REACT_APP_USE_DODO_INVESTOR === 'true');
-    const endpoint = USE_DODO_INVESTOR
-      ? `${BACKEND_URL}/api/payments/dodo/create-checkout-session`
+    // Payment provider routing.
+    // Dodo Payments is the default and is currently the ONLY provider wired up
+    // backend-side (app/api/v1/__init__.py registers dodo.router; the stripe and
+    // payoneer routers are commented out, and settings.STRIPE_SECRET_KEY is not
+    // defined in app/config.py). Keep Dodo as the default so the flag below never
+    // points users at a disabled endpoint.
+    // To enable Stripe: uncomment the stripe router + its config keys, then set
+    // REACT_APP_USE_STRIPE=true.
+    const USE_STRIPE = process.env.REACT_APP_USE_STRIPE === 'true';
+    const endpoint = USE_STRIPE
+      ? `${BACKEND_URL}/api/payments/stripe/create-checkout-session`
       : `${BACKEND_URL}/api/payments/dodo/create-checkout-session`;
 
     try {
@@ -856,9 +876,9 @@ useEffect(() => {
         return;
       }
 
-      // ✅ STRIPE CHECKOUT FLOW - Redirect to Stripe hosted payment page
+      // Hosted checkout redirect - the active provider opens its own payment page
       if (response.data.checkout_url) {
-        console.log('Redirecting to Stripe:', response.data.checkout_url);
+        console.log('Redirecting to hosted checkout:', response.data.checkout_url);
 
         const paymentType = selectedItem.orderType === 'auction' ? 'auction win' : 'marketplace purchase';
         const confirmed = window.confirm(
@@ -920,6 +940,9 @@ useEffect(() => {
       login: '/login',
       about: '/about',
       contact: '/contact',
+      terms: '/terms',
+      privacy: '/privacy',
+      returns: '/returns',
       admin: '/admin',
       'oauth-config': '/oauth-config',
       profile: '/profile',
@@ -1033,6 +1056,12 @@ useEffect(() => {
         return <About />;
       case 'contact':
         return <Contact />;
+      case 'terms':
+        return <Terms navigateToPage={navigateToPage} currentPage={currentPage} />;
+      case 'privacy':
+        return <PrivacyPolicy navigateToPage={navigateToPage} currentPage={currentPage} />;
+      case 'returns':
+        return <Returns navigateToPage={navigateToPage} currentPage={currentPage} />;
       case 'profile':
         return <Profile user={user} />;
       case 'verify-email':
@@ -1256,6 +1285,8 @@ const formatPaymentValue = (value) => Number(value || 0).toLocaleString();
 
       </main>
 
+      <Footer navigateToPage={navigateToPage} />
+
 
 
         {showPaymentDialog ? (
@@ -1412,26 +1443,26 @@ const formatPaymentValue = (value) => Number(value || 0).toLocaleString();
                     </div>
                   </div>
 
-                  {/* RIGHT SIDE - Stripe Information */}
+                  {/* RIGHT SIDE - Payment Information */}
                   <div className="payment-section payment-section-form">
                     <div className="payment-section-header">
                       <h3>Secure Checkout</h3>
                       <div className="payment-powered-by">
                         <span>Powered by</span>
-                        <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" width="60" height="25">
+                        <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" width="60" height="25" role="img" aria-label="Payment provider">
                           <path fill="#635bff" d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.04 1.26-.06 1.48zm-5.92-5.62c-1.03 0-2.17.73-2.17 2.58h4.25c0-1.85-1.07-2.58-2.08-2.58zM40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM40 8.95c-.95 0-1.54.34-1.97.81l.02 6.12c.4.44.98.78 1.95.78 1.52 0 2.54-1.65 2.54-3.87 0-2.15-1.04-3.84-2.54-3.84zM28.24 5.57h4.13v14.44h-4.13V5.57zm0-4.7L32.37 0v3.36l-4.13.88V.88zm-4.32 9.35v9.79H19.8V5.57h3.7l.12 1.22c1-1.77 3.07-1.41 3.62-1.22v3.79c-.52-.17-2.29-.43-3.32.86zm-8.55 4.72c0 2.43 2.6 1.68 3.12 1.46v3.36c-.55.3-1.54.54-2.89.54a4.15 4.15 0 0 1-4.27-4.24l.01-13.17 4.02-.86v3.54h3.14V9.1h-3.13v5.85zm-4.91.7c0 2.97-2.31 4.66-5.73 4.66a11.2 11.2 0 0 1-4.46-.93v-3.93c1.38.75 3.1 1.31 4.46 1.31.92 0 1.53-.24 1.53-1C6.26 13.77 0 14.51 0 9.95 0 7.04 2.28 5.3 5.62 5.3c1.36 0 2.72.2 4.09.75v3.88a9.23 9.23 0 0 0-4.1-1.06c-.86 0-1.44.25-1.44.9 0 1.85 6.29.97 6.29 5.88z"/>
                         </svg>
                       </div>
                     </div>
 
-                    {/* Stripe Checkout Info */}
+                    {/* Hosted checkout info */}
                     <div className="stripe-checkout-info">
                       <div className="stripe-checkout-icon">
                         <CreditCard size={48} />
                       </div>
-                      <h4>Complete Payment with Stripe</h4>
-                      <p>When you click "Confirm & Pay", you'll be securely redirected to Stripe's payment page where you can:</p>
-                      
+                      <h4>Complete Your Payment</h4>
+                      <p>When you click "Confirm &amp; Pay", you'll be securely redirected to our payment provider's hosted checkout page where you can:</p>
+
                       <ul className="stripe-features-list">
                         <li>
                           <Check size={16} />
@@ -1443,7 +1474,7 @@ const formatPaymentValue = (value) => Number(value || 0).toLocaleString();
                         </li>
                         <li>
                           <Check size={16} />
-                          <span>Save cards for faster checkout</span>
+                          <span>Pay using the card or method you prefer</span>
                         </li>
                         <li>
                           <Check size={16} />

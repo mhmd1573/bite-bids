@@ -371,25 +371,25 @@ const Dashboard = ({ user, navigateToPage }) => {
       }
     };
 
-  const fetchPostingCredits = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(  // ✅ Use axios like other functions
-      `${BACKEND_URL}/api/users/me/posting-credits`,  // ✅ CORRECT: BACKEND_URL
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
+    const fetchPostingCredits = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(  // ✅ Use axios like other functions
+        `${BACKEND_URL}/api/users/me/posting-credits`,  // ✅ CORRECT: BACKEND_URL
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
+      );
+      
+      if (response.data.success) {
+        setPostingCredits(response.data.credits || 0);
       }
-    );
-    
-    if (response.data.success) {
-      setPostingCredits(response.data.credits || 0);
+    } catch (error) {
+      console.error('Error fetching posting credits:', error);
     }
-  } catch (error) {
-    console.error('Error fetching posting credits:', error);
-  }
-    };
+      };
 
     // Fetch projects from backend
    const fetchProjects = async () => {
@@ -406,7 +406,7 @@ const Dashboard = ({ user, navigateToPage }) => {
       setLoading(false);
       }
 
-};
+      };
 
     // Fetch current user data
     const fetchCurrentUser = async () => {
@@ -735,7 +735,7 @@ const Dashboard = ({ user, navigateToPage }) => {
       };
 
 
-  const handleEditClick = (project) => {
+    const handleEditClick = (project) => {
         setEditingProject(project);
         setEditForm({
           title: project.title,
@@ -755,7 +755,7 @@ const Dashboard = ({ user, navigateToPage }) => {
       };
 
 
-  const handleUpdateProject = async (e) => {
+    const handleUpdateProject = async (e) => {
   e.preventDefault();
   setLoading(true);
 
@@ -842,7 +842,7 @@ const Dashboard = ({ user, navigateToPage }) => {
 
 
       // Handle Close Bidding
-       const handleCloseBiddingClick = (project) => {
+      const handleCloseBiddingClick = (project) => {
           setProjectToClose(project);
           setShowCloseBiddingDialog(true);
         };
@@ -2851,8 +2851,7 @@ const Dashboard = ({ user, navigateToPage }) => {
                             placeholder="Enter a clear, descriptive project title"
                           />
                         </div>
-
-      
+                            
                         {/* Row 2: Category & Budget */}
                         <div className="form-group">
                           <label className="form-label">Category *</label>
