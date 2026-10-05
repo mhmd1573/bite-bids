@@ -16,6 +16,7 @@ import AdminDisputes from '../AdminDisputes/AdminDisputes';  // ✅ NEW: Import 
 
 import './DashboardAdmin.css';
 import '../Profile/Profile.css';
+import { cleanupUploadedImages } from '../../lib/utils';
 
 // Icon mapping for dynamic activity icons
 const lucideIcons = {
@@ -471,11 +472,14 @@ const handleUpdateProject = async (e) => {
   e.preventDefault();
   setLoading(true);
 
+  // Hoisted so both catch paths can reclaim images that reached R2 before a
+  // later step of this save failed.
+  const newImageUrls = [];
+
   try {
     const token = localStorage.getItem('token');
     
     // ✅ Upload new images first
-    const newImageUrls = [];
     if (editImages.length > 0) {
       setUploadingEditImages(true);
       
@@ -499,6 +503,8 @@ const handleUpdateProject = async (e) => {
           }
         } catch (uploadError) {
           console.error('Image upload failed:', uploadError);
+          // The update is abandoned, so these new objects are unreferenced.
+          cleanupUploadedImages(newImageUrls, token);
           showNotificationModal(
             'error', 
             'Image Upload Failed', 
@@ -539,12 +545,18 @@ const handleUpdateProject = async (e) => {
 
     if (!response.ok) throw new Error('Failed to update project');
 
+    // Capture before handleCloseEditDialog clears editingProject.
+    // The project no longer lists these, so they are safe to reclaim from R2.
+    const removedImages = (editingProject?.images || []).filter((url) => !allImages.includes(url));
+
     showNotificationModal('success', 'Project Updated', 'Project has been updated successfully!');
     handleCloseEditDialog();
+    cleanupUploadedImages(removedImages, token);
     fetchProjects();
     fetchAdminData();
   } catch (error) {
     console.error('Failed to update project:', error);
+    cleanupUploadedImages(newImageUrls, localStorage.getItem('token'));
     showNotificationModal('error', 'Update Failed', error.message || 'Failed to update project');
   } finally {
     setLoading(false);

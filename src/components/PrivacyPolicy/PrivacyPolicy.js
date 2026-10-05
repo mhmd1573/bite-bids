@@ -37,23 +37,6 @@ const SECTIONS = [
           "Billing data: payout bank details supplied by developers. Full payment card numbers are never stored on our servers.",
         ],
       },
-      // { p: "Information we collect automatically:" },
-      // {
-      //   ul: [
-      //     "Device and browser type, screen resolution and operating system.",
-      //     "IP address, and approximate location derived from it.",
-      //     "Pages visited, referring URL and time spent on the Platform.",
-      //     "Authentication tokens and session identifiers stored in your browser.",
-      //   ],
-      // },
-      // { p: "Information from third parties:" },
-      // {
-      //   ul: [
-      //     "Payment confirmations and transaction status from our payment processors.",
-      //     "Email delivery status from our email service provider.",
-      //     "GitHub repository metadata if you connect a repository to a project.",
-      //   ],
-      // },
     ],
   },
   {

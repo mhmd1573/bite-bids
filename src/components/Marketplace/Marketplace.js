@@ -10,6 +10,7 @@ import './Marketplace.css';
 
 import axios from 'axios';
 import { useNotification } from '../NotificationModal/NotificationModal';
+import { cleanupUploadedImages } from '../../lib/utils';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
@@ -349,11 +350,14 @@ const Marketplace = ({ user }) => {
     e.preventDefault();
     setPostLoading(true);
     
+    // Hoisted out of the try so the catch block can reclaim images that reached
+    // R2 before a later step of this submission failed.
+    const imageUrls = [];
+    
     try {
       const token = localStorage.getItem('token');
       
       // Upload images first
-      const imageUrls = [];
       if (selectedImages.length > 0) {
         setUploadingImages(true);
         
@@ -378,6 +382,9 @@ const Marketplace = ({ user }) => {
             }
           } catch (uploadError) {
             console.error('Image upload failed:', uploadError);
+            // Images 1..n already landed in R2 but the project will not be
+            // created, so reclaim them instead of leaving orphans behind.
+            cleanupUploadedImages(imageUrls, token);
             showNotificationModal(
               'error', 
               'Image Upload Failed', 
@@ -435,6 +442,8 @@ const Marketplace = ({ user }) => {
       fetchProjects();
     } catch (error) {
       console.error('Failed to post project:', error);
+      // The project was never created, so these R2 objects are unreachable.
+      cleanupUploadedImages(imageUrls, localStorage.getItem('token'));
       showNotificationModal('error', 'Error', error.response?.data?.detail || 'Failed to post project. Please try again.');
     } finally {
       setPostLoading(false);

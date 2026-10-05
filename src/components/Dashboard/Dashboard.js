@@ -14,6 +14,7 @@ import axios from 'axios';
 
 import './Dashboard.css';
 import { useNotification } from '../NotificationModal/NotificationModal';
+import { cleanupUploadedImages } from '../../lib/utils';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -544,11 +545,14 @@ const Dashboard = ({ user, navigateToPage }) => {
       
       setPostLoading(true);
 
+      // Hoisted out of the try so the catch block can reclaim images that reached
+      // R2 before a later step of this submission failed.
+      const imageUrls = [];
+
       try {
         const token = localStorage.getItem('token');
         
         // ✅ NEW: Upload images first
-        const imageUrls = [];
         if (selectedImages.length > 0) {
           setUploadingImages(true);
           
@@ -573,6 +577,9 @@ const Dashboard = ({ user, navigateToPage }) => {
               }
             } catch (uploadError) {
               console.error('Image upload failed:', uploadError);
+              // Images 1..n already landed in R2 but the project will not be
+              // created, so reclaim them instead of leaving orphans behind.
+              cleanupUploadedImages(imageUrls, token);
               showNotificationModal(
                 'error', 
                 'Image Upload Failed', 
@@ -633,6 +640,8 @@ const Dashboard = ({ user, navigateToPage }) => {
         fetchCurrentUser();
       } catch (error) {
         console.error('Failed to post project:', error);
+        // The project was never created, so these R2 objects are unreachable.
+        cleanupUploadedImages(imageUrls, localStorage.getItem('token'));
         showNotificationModal('error', 'Error', error.response?.data?.detail || 'Failed to post project. Please try again.');
       } finally {
         setPostLoading(false);
@@ -759,11 +768,14 @@ const Dashboard = ({ user, navigateToPage }) => {
   e.preventDefault();
   setLoading(true);
 
+  // Hoisted so both catch paths can reclaim images that reached R2 before a
+  // later step of this save failed.
+  const newImageUrls = [];
+
   try {
     const token = localStorage.getItem('token');
     
     // ✅ NEW: Upload new images first
-    const newImageUrls = [];
     if (editImages.length > 0) {
       setUploadingEditImages(true);
       
@@ -788,6 +800,8 @@ const Dashboard = ({ user, navigateToPage }) => {
           }
         } catch (uploadError) {
           console.error('Image upload failed:', uploadError);
+          // The update is abandoned, so these new objects are unreferenced.
+          cleanupUploadedImages(newImageUrls, token);
           showNotificationModal(
             'error', 
             'Image Upload Failed', 
@@ -831,9 +845,16 @@ const Dashboard = ({ user, navigateToPage }) => {
     setShowEditDialog(false);
     setEditingProject(null);
     setEditImages([]);  // ✅ NEW: Clear edit images
+    // The project no longer lists these, so they are safe to reclaim from R2.
+    // Safe to call only after the PUT succeeded.
+    cleanupUploadedImages(
+      (editingProject?.images || []).filter((url) => !allImages.includes(url)),
+      token
+    );
     fetchProjects();
   } catch (error) {
     console.error('Failed to update project:', error);
+    cleanupUploadedImages(newImageUrls, localStorage.getItem('token'));
     showNotificationModal('error', 'Error', error.response?.data?.detail || 'Failed to update project');
   } finally {
     setLoading(false);
